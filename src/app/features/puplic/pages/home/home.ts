@@ -1,0 +1,21 @@
+import { Component, signal } from '@angular/core';
+
+@Component({
+  imports: [],
+  selector: 'app-home',
+  styleUrl: './home.css',
+  templateUrl: './home.html',
+})
+export class Home {
+  readonly selectedAction = signal('track');
+  readonly multiple = signal(false);
+  readonly fileName = signal('No file chosen');
+  setMultiple(value: boolean) {
+    this.multiple.set(value);
+    this.fileName.set('No file chosen');
+  }
+  selectFile(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.fileName.set(input.files?.[0]?.name ?? 'No file chosen');
+  }
+}

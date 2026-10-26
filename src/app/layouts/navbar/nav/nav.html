@@ -1,0 +1,89 @@
+<header class="site-header" [class.scrolled]="scrolled()" (pointerleave)="$event.pointerType === 'mouse' && activeMenu.set(null)" (focusout)="!$any($event.currentTarget).contains($event.relatedTarget) && activeMenu.set(null)">
+  <nav class="navbar" [class.search-open]="searchOpen()" aria-label="Main navigation">
+    <a class="brand" href="/" aria-label="EGXPRESS home"><img src="images/eg-logo.svg" alt="EGXPRESS" /></a>
+    <button class="mobile-toggle" type="button" (click)="mobileOpen.set(!mobileOpen()); activeMenu.set(null)" [attr.aria-expanded]="mobileOpen()" aria-controls="navigation" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="navigation" id="navigation" [class.mobile-open]="mobileOpen()">
+      <ul class="nav-links">
+        @for (menu of menus; track menu.id) {
+          <li (pointerenter)="hoverMenu($event, menu.id)">
+            <button class="nav-trigger" type="button" [id]="'trigger-' + menu.id" [class.active]="activeMenu() === menu.id" [attr.aria-expanded]="activeMenu() === menu.id" [attr.aria-controls]="'panel-' + menu.id" (click)="toggleMenu(menu.id)">
+              {{ menu.label }}
+            </button>
+            @if (activeMenu() === menu.id) {
+              <section class="mega-menu" [id]="'panel-' + menu.id" [attr.aria-labelledby]="'trigger-' + menu.id">
+                <div class="mega-inner">
+                  <div class="menu-content">
+                    <h2>{{ menu.heading }}</h2>
+                    @if (menu.id === 'tracking') {
+                      <div class="tracking-form">
+                        <label for="waybill">Your way bill number</label>
+                        <input id="waybill" type="text" placeholder="Your way bill number" autocomplete="off" />
+                        <button class="track-button" type="button">TRACK</button>
+                      </div>
+                    }
+                    <ul class="dropdown-links">
+                      @for (link of menu.links; track link) {
+                        <li><a [attr.href]="'#' + menu.id + '-' + $index" (click)="close()">{{ link }}</a></li>
+                      }
+                    </ul>
+                    @if (menu.action) {
+                      <a class="menu-action" [attr.href]="'#' + menu.id + '-services'" (click)="close()">{{ menu.action }}</a>
+                    }
+                  </div>
+                  <img class="menu-image" [class.tracking-image]="menu.id === 'tracking'" [src]="'images/' + menu.image" [alt]="menu.heading" />
+                </div>
+              </section>
+            }
+          </li>
+        }
+      </ul>
+      <div class="account-actions">
+        <div class="account-menu" (pointerenter)="hoverMenu($event, 'account')" (pointerleave)="$event.pointerType === 'mouse' && activeMenu.set(null)">
+        <button class="login" id="trigger-account" type="button" [class.active]="activeMenu() === 'account'" [attr.aria-expanded]="activeMenu() === 'account'" aria-controls="panel-account" (click)="toggleMenu('account')">{{ isLoggedIn() ? 'My Account' : 'Sign Up/Log In' }}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><circle cx="12" cy="7" r="4"/><path d="M4 22v-4a8 6 0 0 1 16 0v4Z"/></svg>
+         
+        </button>
+        @if (activeMenu() === 'account') {
+          <ul class="account-dropdown" id="panel-account" aria-labelledby="trigger-account">
+            @if (isLoggedIn()) {
+              <li><a routerLink="/profile" (click)="close()">Profile</a></li>
+              <li><a routerLink="/address-book" (click)="close()">Address Book</a></li>
+              <li><button class="logout" type="button" (click)="logout()">Logout</button></li>
+            } @else {
+              <li><a routerLink="/register" (click)="close()">Registration</a></li>
+              <li><a routerLink="/login" (click)="close()">Login</a></li>
+            }
+          </ul>
+        }
+        </div>
+        <a class="open-account" href="#open-account" (pointerenter)="activeMenu.set(null)" (click)="close()">Open Account</a>
+      </div>
+    </div>
+    <div class="nav-utilities">
+      <button class="icon-button search-toggle" id="search-toggle" type="button" aria-label="Open search" [attr.aria-expanded]="searchOpen()" aria-controls="navbar-search" (click)="openSearch()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><circle cx="10.5" cy="10.5" r="7.5"/><path d="m16 16 6 6"/></svg>
+      </button>
+      <div class="language-toggle" role="group" aria-label="Language" dir="ltr">
+        <button type="button" [class.selected]="language() === 'AR'" [attr.aria-pressed]="language() === 'AR'" (click)="language.set('AR')" aria-label="Arabic">AR</button>
+        <button type="button" [class.selected]="language() === 'EN'" [attr.aria-pressed]="language() === 'EN'" (click)="language.set('EN')" aria-label="English">EN</button>
+      </div>
+    </div>
+    @if (searchOpen()) {
+      <div class="search-panel" id="navbar-search">
+        <form class="search-form" role="search" (submit)="$event.preventDefault()">
+          <input #searchInput type="search" name="search" placeholder="Search" aria-label="Search the website" autocomplete="off" />
+          <button class="search-submit icon-button" type="submit" aria-label="Search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><circle cx="10.5" cy="10.5" r="7.5"/><path d="m16 16 6 6"/></svg>
+          </button>
+        </form>
+        <button class="icon-button search-close" type="button" aria-label="Close search" (click)="closeSearch()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="m5 5 14 14M19 5 5 19"/></svg>
+        </button>
+      </div>
+    }
+  </nav>
+</header>
+
+

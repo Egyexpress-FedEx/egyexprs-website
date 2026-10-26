@@ -1,0 +1,113 @@
+<section class="welcome" aria-labelledby="welcome-heading">
+  <div class="welcome-content">
+    <h1 id="welcome-heading">Welcome to <strong>EGXPRESS</strong></h1>
+    <div class="service-cards" role="group" aria-label="Shipping services">
+      <button type="button" class="service-card" [class.selected]="selectedAction() === 'rate'" [attr.aria-pressed]="selectedAction() === 'rate'" (click)="selectedAction.set('rate'); fileName.set('No file chosen')">
+        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="m17 12 13-6 13 6-13 7-13-7Zm0 0v14m26-14v16l-13 7V19m-7-10 13 7"/><path d="M5 23h18v21H5zM9 28h10M9 32h10M9 36h4m3 0h3M9 40h10"/></svg>
+        <span>GET RATE</span>
+      </button>
+      <button type="button" class="service-card" [class.selected]="selectedAction() === 'track'" [attr.aria-pressed]="selectedAction() === 'track'" (click)="selectedAction.set('track')">
+        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="m6 12 15-7 15 7-15 7-15-7Zm0 0v19l15 8V19m15-7v10M13 9l15 7"/><circle cx="32" cy="31" r="8"/><path d="m38 37 7 7"/></svg>
+        <span>TRACK</span>
+      </button>
+      <button type="button" class="service-card" [class.selected]="selectedAction() === 'ship'" [attr.aria-pressed]="selectedAction() === 'ship'" (click)="selectedAction.set('ship'); fileName.set('No file chosen')">
+        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 14-7 14 7-14 7-14-7Zm0 0v22l14 7V19m14-7v12M12 9l14 7"/><path d="m22 30 8-1 5-9 3 1-2 9 8 3v3l-10-1-5 7-3-1 2-7-6-1z"/></svg>
+        <span>SHIP</span>
+      </button>
+    </div>
+    <div class="service-panel">
+      @if (selectedAction() === 'track') {
+        <fieldset class="tracking-options">
+          <legend>Tracking type</legend>
+          <label><input type="radio" name="tracking-type" [checked]="!multiple()" (change)="setMultiple(false)" /><span>Single DWB</span></label>
+          <label><input type="radio" name="tracking-type" [checked]="multiple()" (change)="setMultiple(true)" /><span>Multiple DWB</span></label>
+        </fieldset>
+        <form class="tracking-input" (submit)="$event.preventDefault()">
+          @if (multiple()) {
+            <div class="file-picker">
+              <label class="choose-file">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg>
+                <span>Choose File</span>
+                <input class="file-control" type="file" name="waybills" aria-label="Choose shipment tracking file" (change)="selectFile($event)" />
+              </label>
+              <span class="file-name" aria-live="polite" [title]="fileName()">{{ fileName() }}</span>
+            </div>
+          } @else {
+            <input type="text" name="waybill" aria-label="Your way bill number" placeholder="Your way bill number" />
+          }
+          <button type="submit">TRACK</button>
+        </form>
+        @if (multiple()) {
+          <div class="example-row"><a class="download-example" href="#download-example">Download Example</a></div>
+        }
+      } @else if (selectedAction() === 'rate') {
+        <a class="service-link" href="#get-rate">GET RATES AND TRANSIT TIMES</a>
+      } @else {
+        <a class="service-link" href="#ship">SHIP A SHIPMENT</a>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="account-banner" aria-labelledby="account-banner-title">
+  <div class="account-banner-inner">
+    <div class="account-banner-message">
+      <div class="account-banner-icon" aria-hidden="true">
+        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 34 25-25 17 4 4 17-25 25L9 34Z"/><circle cx="43" cy="22" r="4"/><path d="m23 33 10 10m-4-16 10 10m-22 2 10 10"/></svg>
+      </div>
+      <div class="account-banner-copy">
+        <h2 id="account-banner-title">Sign up now to enjoy tailored shipping rates<br class="desktop-break" /> designed around your needs.</h2>
+        <p>Services and solutions built to meet all your shipping needs.</p>
+      </div>
+    </div>
+    <div class="account-banner-action">
+      <a class="account-banner-button" href="#open-account">OPEN AN ACCOUNT</a>
+    </div>
+  </div>
+</section>
+<section class="manage-shipments" aria-labelledby="manage-shipments-title">
+  <div class="manage-inner">
+    <h2 id="manage-shipments-title">Manage your shipments</h2>
+    <div class="shipment-services">
+      <a class="shipment-service" href="#schedule-pickup">
+        <svg viewBox="0 0 88 88" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="44" cy="44" r="35" stroke="#252525"/>
+          <path d="M44 9a35 35 0 0 1 0 70" stroke="var(--color-primary)"/>
+          <circle cx="44" cy="35" r="13" stroke="#252525"/>
+          <path d="M44 22a13 13 0 0 1 0 26M23 71l2-13c1-7 7-10 19-10s18 3 19 10l2 13" stroke="var(--color-primary)"/>
+          <path d="m23 71 2-13c1-7 7-10 19-10" stroke="#252525"/>
+        </svg>
+        <span>SCHEDULE PICKUP</span>
+      </a>
+      <a class="shipment-service" href="#find-locations">
+        <svg viewBox="0 0 88 88" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <ellipse cx="44" cy="71" rx="24" ry="7" stroke="var(--color-primary)"/>
+          <path d="M44 69S22 46 22 31a22 22 0 0 1 44 0c0 15-22 38-22 38Z" stroke="#252525"/>
+          <circle cx="44" cy="31" r="8" stroke="#252525"/>
+        </svg>
+        <span>FIND LOCATIONS</span>
+      </a>
+      <a class="shipment-service" href="#check-shipping-rate">
+        <svg viewBox="0 0 88 88" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="21" y="9" width="46" height="70" rx="2" stroke="#252525"/>
+          <path d="M44 9h21a2 2 0 0 1 2 2v66a2 2 0 0 1-2 2H44" stroke="var(--color-primary)"/>
+          <path d="M27 15h34v20H27z" stroke="var(--color-primary)"/>
+          <path d="m31 24 5-5m-5 12 11-11" stroke="#252525"/>
+          <path d="M27 42h6v6h-6zM38 42h6v6h-6zM49 42h6v6h-6zM27 53h6v6h-6zM38 53h6v6h-6zM49 53h6v6h-6zM27 64h6v6h-6zM38 64h6v6h-6zM49 64h6v6h-6z" stroke="#252525"/>
+          <path d="M60 42h2v6h-2M60 53h2v17h-2" stroke="var(--color-primary)"/>
+        </svg>
+        <span>CHECK SHIPPING RATE</span>
+      </a>
+      <a class="shipment-service" href="#faqs">
+        <svg viewBox="0 0 88 88" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="44" cy="44" r="38" stroke="var(--color-primary)"/>
+          <circle cx="44" cy="44" r="33" stroke="#252525"/>
+          <path d="M33 31a11 11 0 1 1 18 8c-5 4-7 6-7 12" stroke="#252525" stroke-width="4"/>
+          <path d="M44 20a11 11 0 0 1 7 19c-5 4-7 6-7 12" stroke="var(--color-primary)" stroke-width="4"/>
+          <circle cx="44" cy="62" r="2.6" fill="var(--color-primary)" stroke="none"/>
+        </svg>
+        <span>FAQS</span>
+      </a>
+    </div>
+  </div>
+</section>

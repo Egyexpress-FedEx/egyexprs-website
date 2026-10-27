@@ -1,0 +1,67 @@
+<section class="register-hero" aria-labelledby="register-page-title">
+  <div class="register-hero-inner">
+    <span class="hero-eyebrow">YOUR EGXPRESS ACCOUNT</span>
+    <h1 id="register-page-title">A smarter way to manage your shipping.</h1>
+    <p>Create your user ID and connect to your existing business account.</p>
+  </div>
+</section>
+<section class="register-section" aria-labelledby="register-title">
+  <div class="register-inner">
+    <div class="register-heading">
+      <div><span class="section-eyebrow">LET’S GET STARTED</span><h2 id="register-title">New user registration</h2><p>Enter your account details and business information to get started.</p></div>
+      <a routerLink="/login" class="login-link">Already registered? <strong>Log in <span aria-hidden="true">↗</span></strong></a>
+    </div>
+    <form [formGroup]="form" (ngSubmit)="register()" novalidate>
+      <div class="register-columns">
+        <section class="register-card" aria-labelledby="profile-title">
+          <div class="card-heading"><div><h3 id="profile-title">Your account details</h3><p>Your access to the EGXPRESS portal.</p></div></div>
+          <div class="card-fields">
+            @for (field of profileFields; track field.key) {
+              <div class="form-field">
+                <label [for]="'register-' + field.key">{{ field.label }} <span aria-hidden="true">*</span></label>
+                <div class="input-wrap" [class.invalid]="error(field.key)">
+                  <input [id]="'register-' + field.key" [formControlName]="field.key" [type]="field.type === 'password' && showPassword() ? 'text' : field.type" [placeholder]="field.placeholder" [autocomplete]="field.autocomplete" (blur)="field.key === 'accountNumber' && lookupAccount()" required [attr.aria-invalid]="!!error(field.key)" [attr.aria-describedby]="error(field.key) ? field.key + '-error' : (field.key === 'accountNumber' ? 'account-help' : null)" />
+                  @if (field.type === 'password') {
+                    <button class="password-toggle" type="button" (click)="showPassword.set(!showPassword())" [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'" [attr.aria-pressed]="showPassword()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>@if (!showPassword()) { <path d="m3 3 18 18"/> }</svg></button>
+                  }
+                </div>
+                @if (error(field.key)) { <p class="field-error" [id]="field.key + '-error'">{{ error(field.key) }}</p> }
+                @if (field.key === 'accountNumber') { <p class="field-help" id="account-help">Use the account number provided by EGXPRESS.</p> }
+              </div>
+            }
+            <div class="account-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/></svg><p>Don’t have an EGXPRESS account yet?<br /><a routerLink="/open-account">Open a business account <span aria-hidden="true">↗</span></a></p></div>
+          </div>
+        </section>
+        <section class="register-card" aria-labelledby="business-title">
+          <div class="card-heading"><div><h3 id="business-title">Your business information</h3><p>Help us stay connected to your business.</p></div></div>
+          <div class="card-fields business-fields">
+            @for (field of businessFields; track field.key) {
+              <div class="form-field" [class.full-width]="field.wide">
+                <label [for]="'register-' + field.key">{{ field.label }} @if (field.required) { <span aria-hidden="true">*</span> } @else if (field.key !== 'company') { <small>optional</small> }</label>
+                <div class="input-wrap" [class.invalid]="error(field.key)" [class.readonly]="field.key === 'company'">
+                  @if (field.key === 'city') {
+                    <select id="register-city" formControlName="city" autocomplete="address-level2" (pointerdown)="loadCities()" (keydown.enter)="loadCities()" (keydown.space)="loadCities()" (keydown.arrowdown)="loadCities()" (keydown.arrowup)="loadCities()" required [attr.aria-busy]="citiesLoading()" [attr.aria-invalid]="!!error('city') || !!citiesError()" [attr.aria-describedby]="citiesError() ? 'cities-load-error' : (error('city') ? 'city-error' : null)">
+                      <option value="" disabled>{{ citiesLoading() ? 'Loading cities…' : 'Select City' }}</option>
+                      @for (city of cities(); track city.cl_CodeID) { <option [value]="city.cl_CodeID">{{ city.cl_CodeName }}</option> }
+                    </select>
+                  } @else {
+                  <input [id]="'register-' + field.key" [formControlName]="field.key" [type]="field.type" [placeholder]="field.placeholder" [autocomplete]="field.autocomplete" [required]="field.required" [readOnly]="field.key === 'company'" [attr.aria-invalid]="!!error(field.key)" [attr.aria-describedby]="error(field.key) ? field.key + '-error' : null" />
+                  }
+                </div>
+                @if (error(field.key)) { <p class="field-error" [id]="field.key + '-error'">{{ error(field.key) }}</p> }
+                @if (field.key === 'city' && citiesError()) { <p class="field-error" id="cities-load-error" role="alert">{{ citiesError() }}</p> }
+              </div>
+            }
+          </div>
+        </section>
+      </div>
+      <div class="register-actions">
+        <p><span aria-hidden="true">*</span> Required fields</p>
+        <div class="action-buttons"><button class="clear-button" type="button" (click)="clear()" [disabled]="registering()">Clear form</button><button class="register-button" type="submit" [disabled]="registering() || registered()">{{ registering() ? 'Registering…' : registered() ? 'Registration received' : 'Create user ID' }} <span aria-hidden="true">→</span></button></div>
+      </div>
+    </form>
+  </div>
+</section>
+@if (notice()) {
+  <app-toast [heading]="registered() ? 'Registration received' : 'Unable to register'" [message]="notice()" [success]="registered()" (dismissed)="notice.set('')" />
+}

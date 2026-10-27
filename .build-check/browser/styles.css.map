@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/styles.css"],
+  "sourcesContent": [":root {\r\n  --color-primary: #ff6b00;\r\n  --color-white: #ffffff;\r\n  --color-black: #000000;\r\n  --font-family-base: Arial, Helvetica, sans-serif;\r\n  --font-weight-regular: 400;\r\n  --font-weight-bold: 700;\r\n}\r\nbody {\r\n  margin: 0;\r\n  padding: 0;\r\n  font-family: var(--font-family-base);\r\n  font-weight: var(--font-weight-regular);\r\n  color: var(--color-black);\r\n  background-color: var(--color-white);\r\n}\r\n\r\nbutton,\r\ninput,\r\nselect,\r\ntextarea {\r\n  font: inherit;\r\n}\r\n"],
+  "mappings": ";AAAA;AACE,mBAAiB;AACjB,iBAAe;AACf,iBAAe;AACf;AAAA,IAAoB,KAAK;AAAA,IAAE,SAAS;AAAA,IAAE;AACtC,yBAAuB;AACvB,sBAAoB;AACtB;AACA;AACE,UAAQ;AACR,WAAS;AACT,eAAa,IAAI;AACjB,eAAa,IAAI;AACjB,SAAO,IAAI;AACX,oBAAkB,IAAI;AACxB;AAEA;AACA;AACA;AACA;AACE,QAAM;AACR;",
+  "names": []
+}

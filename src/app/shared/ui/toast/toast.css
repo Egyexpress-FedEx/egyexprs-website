@@ -1,0 +1,17 @@
+:host { display: contents; }
+* { box-sizing: border-box; }
+.toast { position: fixed; top: 24px; right: 24px; z-index: 10000; display: flex; align-items: flex-start; gap: 14px; width: min(400px, calc(100vw - 32px)); padding: 18px; border: 1px solid #f2e4de; border-left: 3px solid var(--color-primary); border-radius: 12px; background: #fff; box-shadow: 0 12px 40px #14283c26; animation: toast-enter .25s ease-out; }
+.icon { display: grid; place-items: center; flex-shrink: 0; width: 38px; height: 38px; border-radius: 11px; background: #fff2e8; color: #e06413; }
+.icon svg { width: 22px; height: 22px; }
+.content { flex: 1; min-width: 0; padding-top: 2px; }
+strong { display: block; color: #303944; font-size: 13px; font-weight: 600; line-height: 1.5; }
+p { margin: 5px 0 0; color: #78828e; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
+button { display: grid; place-items: center; flex-shrink: 0; width: 30px; height: 30px; padding: 6px; border: 0; border-radius: 7px; background: transparent; color: #9ba2ad; cursor: pointer; }
+button svg { width: 17px; height: 17px; }
+button:hover { background: #f5f6f8; color: #495460; }
+button:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+.success { border-color: #dcece3; border-left-color: #2b9161; }
+.success .icon { background: #edf8f1; color: #2b9161; }
+@keyframes toast-enter { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 640px) { .toast { top: 16px; right: 16px; } }
+@media (prefers-reduced-motion: reduce) { .toast { animation: none; } }

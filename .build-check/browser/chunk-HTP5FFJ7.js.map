@@ -1,0 +1,14 @@
+{
+  "version": 3,
+  "sources": [
+    "src/app/features/identity/Auth/login/login.ts",
+    "src/app/features/identity/Auth/login/login.html"
+  ],
+  "sourcesContent": [
+    "import { Component } from '@angular/core';\n\n@Component({\n  imports: [],\n  selector: 'app-login',\n  styleUrl: './login.css',\n  templateUrl: './login.html',\n})\nexport class Login {}\n",
+    "<p>login works!</p>\n"
+  ],
+  "mappings": ";;;;;;;;;;;AAQM,IAAO,QAAP,MAAO,OAAK;;qCAAL,QAAK;EAAA;yEAAL,QAAK,WAAA,CAAA,CAAA,WAAA,CAAA,GAAA,OAAA,GAAA,MAAA,GAAA,UAAA,SAAA,eAAA,IAAA,KAAA;AAAA,QAAA,KAAA,GAAA;ACRlB,MAAA,4BAAA,GAAA,GAAA;AAAG,MAAA,iBAAA,GAAA,cAAA;AAAY,MAAA,0BAAA;;;;;sEDQF,OAAK,CAAA;UANjB;sBACU,CAAA,GAAE,UACD,aAAW,UAAA,yBAAA,QAAA,CAAA,+FAAA,EAAA,CAAA;;;;6EAIV,OAAK,EAAA,WAAA,SAAA,UAAA,iDAAA,YAAA,EAAA,CAAA;AAAA,GAAA;",
+  "names": [],
+  "debugId": "2910bdba-c817-5547-9aa8-7d38a6a29597"
+}

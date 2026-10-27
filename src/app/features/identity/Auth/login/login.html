@@ -1,1 +1,51 @@
-<p>login works!</p>
+<section class="login-hero" aria-labelledby="login-page-title">
+  <div class="login-hero-inner">
+    <span class="hero-eyebrow">YOUR EGXPRESS ACCOUNT</span>
+    <h1 id="login-page-title">Sign Up / Log In</h1>
+    <p>Your business. Your shipments. One place.</p>
+  </div>
+</section>
+<section class="login-section" aria-labelledby="login-title">
+  <a class="existing-account-link" routerLink="/register">CREATE A USER ID FOR AN EXISTING ACCOUNT <span aria-hidden="true">↗</span></a>
+  <div class="login-card">
+    <div class="login-heading">
+      <span class="login-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"/></svg></span>
+      <h2 id="login-title">Welcome back</h2>
+      <p>Log in to manage your shipments with ease.</p>
+    </div>
+    <form [formGroup]="form" (ngSubmit)="signIn()" novalidate>
+      <div class="form-field">
+        <label for="login-user-id">Email or User ID <span aria-hidden="true">*</span></label>
+        <div class="input-wrap" [class.invalid]="invalid('userId')">
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></svg>
+          <input id="login-user-id" type="text" formControlName="userId" autocomplete="username" placeholder="Enter your email or User ID" required [attr.aria-invalid]="invalid('userId')" [attr.aria-describedby]="invalid('userId') ? 'user-id-error' : null" />
+        </div>
+        @if (invalid('userId')) { <p class="field-error" id="user-id-error">Please enter your email or User ID.</p> }
+      </div>
+      <div class="form-field">
+        <label for="login-password">Password <span aria-hidden="true">*</span></label>
+        <div class="input-wrap" [class.invalid]="invalid('password')">
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+          <input id="login-password" [type]="showPassword() ? 'text' : 'password'" formControlName="password" autocomplete="current-password" placeholder="Enter your password" required [attr.aria-invalid]="invalid('password')" [attr.aria-describedby]="invalid('password') ? 'password-error' : null" />
+          <button class="password-toggle" type="button" (click)="showPassword.set(!showPassword())" [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'" [attr.aria-pressed]="showPassword()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>@if (!showPassword()) { <path d="m3 3 18 18"/> }</svg>
+          </button>
+        </div>
+        @if (invalid('password')) { <p class="field-error" id="password-error">Please enter your password.</p> }
+      </div>
+      <div class="login-options">
+        <label class="remember-me"><input type="checkbox" formControlName="remember" /><span>Remain logged in</span></label>
+        <a href="#forgot-password">Forgot password?</a>
+      </div>
+      <button class="sign-in" type="submit" [disabled]="loading()">{{ loading() ? 'Signing in…' : 'Sign in' }} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+    </form>
+    <div class="login-signup"><p>New to EGXPRESS?</p><a routerLink="/open-account">Create an account <span aria-hidden="true">↗</span></a></div>
+  </div>
+</section>
+@if (notice()) {
+  <div class="login-toast" role="alert" aria-atomic="true">
+    <span class="toast-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 3v1"/></svg></span>
+    <div class="toast-content"><strong>Unable to sign in</strong><p>{{ notice() }}</p></div>
+    <button class="toast-close" type="button" aria-label="Dismiss notification" (click)="notice.set('')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+  </div>
+}

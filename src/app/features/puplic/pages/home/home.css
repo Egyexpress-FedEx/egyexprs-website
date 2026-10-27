@@ -1,4 +1,10 @@
 :host { display: block; }
+.company-video { padding: 36px 24px 60px; background: var(--color-white); }
+.company-video-player { width: 100%; max-width: 900px; aspect-ratio: 16 / 9; margin-inline: auto; overflow: hidden; border-radius: 10px; background: #000; }
+.company-video-player iframe { display: block; width: 100%; height: 100%; border: 0; }
+@media (max-width: 640px) {
+  .company-video { padding: 24px 20px 40px; }
+}
 *, *::before, *::after { box-sizing: border-box; }
 .welcome { position: relative; display: grid; place-items: center; min-height: clamp(560px, 78svh, 735px); padding: 48px 24px; background: linear-gradient(90deg, #03192585, #07192550 90%, #06172670), url('/images/home-page-1920-735.png') center / cover no-repeat; color: var(--color-white); font-family: var(--font-family-base); }
 .welcome-content { width: 100%; max-width: 620px; text-align: center; }
@@ -116,3 +122,62 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .shipment-service, .shipment-service svg, .shipment-service svg [stroke], .shipment-service svg [fill] { transition: none; }
   .shipment-service:hover svg { transform: none; }
 }
+
+.logistics-services { padding: 64px 24px 0; background: var(--color-white); color: #414141; text-align: center; }
+.logistics-services-inner { max-width: 956px; margin-inline: auto; padding-bottom: 60px; border-bottom: 1px solid #e3e3e3; }
+.logistics-services h2 { margin: 0 0 18px; font-size: clamp(30px, 3.2vw, 44px); font-weight: var(--font-weight-regular); line-height: 1.2; }
+.logistics-services-intro { margin: 0 0 30px; font-size: 16px; line-height: 1.5; }
+.logistics-services-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.logistics-service { display: flex; flex-direction: column; min-width: 0; align-items: center; }
+.logistics-service-image { width: 100%; overflow: hidden; }
+.logistics-service img { display: block; width: 100%; height: auto; aspect-ratio: 302 / 164; object-fit: cover; transition: transform .35s ease; }
+.logistics-service-image:hover img { transform: scale(1.05); }
+.logistics-service h3 { margin: 24px 0 4px; font-size: 30px; font-weight: var(--font-weight-regular); line-height: 1.2; }
+.logistics-service p { margin: 0; font-size: 16px; line-height: 1.5; }
+.logistics-learn-more { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 44px; margin-top: auto; padding: 32px 8px 8px; color: var(--color-primary); font-size: 14px; font-weight: var(--font-weight-bold); letter-spacing: .5px; text-decoration: none; transition: opacity .2s ease; }
+.logistics-learn-more span[aria-hidden] { font-size: 22px; line-height: 1; font-weight: var(--font-weight-regular); }
+.logistics-learn-more:hover { opacity: .65; }
+.service-link-description { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.logistics-all-services { display: inline-flex; align-items: center; justify-content: center; min-height: 49px; margin-top: 42px; padding: 12px 21px; border: 1px solid var(--color-primary); border-radius: 26px; color: var(--color-primary); font-size: 16px; line-height: 1.5; text-decoration: none; transition: background-color .2s, color .2s; }
+.logistics-all-services:hover { background: var(--color-primary); color: var(--color-white); }
+@media (min-width: 641px) and (max-width: 1000px) {
+  .logistics-service h3 { font-size: 24px; }
+}
+@media (max-width: 640px) {
+  .logistics-services { padding: 36px 20px 0; }
+  .logistics-services-inner { padding-bottom: 40px; }
+  .logistics-services-grid { grid-template-columns: 1fr; gap: 36px; max-width: 380px; margin-inline: auto; }
+  .logistics-service h3 { margin-top: 20px; font-size: 28px; }
+  .logistics-learn-more { padding-top: 18px; }
+  .logistics-all-services { margin-top: 32px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .logistics-all-services, .logistics-learn-more, .logistics-service img { transition: none; }
+  .logistics-service-image:hover img { transform: none; }
+}
+
+.home-news { padding: 60px 24px; background: var(--color-white); color: #333; }
+.home-news-inner { display: grid; grid-template-columns: 466fr 490fr; max-width: 956px; margin-inline: auto; background: #f2f2f2; }
+.home-news-image { display: block; width: 100%; height: 100%; min-height: 379px; object-fit: cover; }
+.home-news-content { min-width: 0; padding: 26px 48px 24px; }
+.home-news-content h2 { margin: 0 0 20px; font-size: 34px; line-height: 1.2; font-weight: var(--font-weight-regular); }
+.home-news-intro { margin: 0 0 24px; font-size: 16px; line-height: 1.5; }
+.home-news-list { display: grid; gap: 16px; }
+.home-news-item h3 { margin: 0; font-size: 16px; line-height: 1.4; font-weight: var(--font-weight-bold); }
+.home-news-item a { color: var(--color-primary); text-decoration: none; transition: opacity .2s; }
+.home-news-item a:hover { opacity: .65; }
+.home-news-item time { display: block; color: var(--color-primary); font-size: 16px; line-height: 1.5; }
+.home-news-all { display: inline-flex; align-items: center; justify-content: center; min-height: 49px; margin-top: 24px; padding: 12px 21px; border: 1px solid var(--color-primary); border-radius: 26px; color: var(--color-primary); font-size: 16px; line-height: 1.5; text-decoration: none; transition: background-color .2s, color .2s; }
+.home-news-all:hover { background: var(--color-primary); color: var(--color-white); }
+@media (min-width: 641px) and (max-width: 1000px) {
+  .home-news-content { padding: 26px; }
+  .home-news-content h2 { font-size: 30px; }
+}
+@media (max-width: 640px) {
+  .home-news { padding: 40px 20px; }
+  .home-news-inner { grid-template-columns: 1fr; }
+  .home-news-image { height: auto; min-height: 0; }
+  .home-news-content { padding: 28px 24px; }
+  .home-news-content h2 { font-size: 30px; }
+}
+@media (prefers-reduced-motion: reduce) { .home-news-item a, .home-news-all { transition: none; } }

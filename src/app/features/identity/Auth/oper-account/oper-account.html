@@ -1,0 +1,77 @@
+<section class="account-hero" aria-labelledby="account-page-title">
+  <div class="account-hero-content">
+    <h1 id="account-page-title">Open an account</h1>
+    <p>Take advantage of our services and solutions designed to meet all your shipping requirements. Open a Egypt Express shipping account below. Let’s get started!</p>
+  </div>
+</section>
+<section class="account-offer" aria-labelledby="account-offer-title">
+  <div class="account-inner">
+    <div class="offer-card">
+      <span class="offer-accent" aria-hidden="true"></span>
+      <h2 id="account-offer-title">Sign up now and enjoy personalised shipping rates!</h2>
+      <p class="offer-description">Open a corporate account and enjoy our standard 30 days credit terms.</p>
+      <button class="open-account-button" type="button" (click)="openAccount()">OPEN AN ACCOUNT <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+      <div class="credit-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/></svg>
+        <p>The shipping limit and credit limit is EGP 150,000/- (including freight and duties/taxes). Services would be interrupted if the mentioned limit is exceeded, regardless of the invoice due date.</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="account-benefits" aria-labelledby="account-benefits-title">
+  <div class="account-inner">
+    <h2 id="account-benefits-title">Opening an account has its benefits</h2>
+    <div class="benefits-grid">
+      <article class="benefit-card">
+        <span class="benefit-icon"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="m17 12 13-6 13 6-13 7-13-7Zm0 0v10m26-10v16l-13 7V19m-7-10 13 7"/><rect x="5" y="23" width="18" height="21" rx="2"/><path d="M9 28h10M9 33h3m4 0h3M9 38h3m4 0h3"/></svg></span>
+        <h3>Get your account-specific rate</h3>
+      </article>
+      <article class="benefit-card">
+        <span class="benefit-icon"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M5 32V12h23v25H14m14-18h9l6 9v9h-5M28 28h15M22 37h7"/><circle cx="10" cy="37" r="5"/><circle cx="34" cy="37" r="5"/></svg></span>
+        <h3>Schedule and manage pickup</h3>
+      </article>
+      <article class="benefit-card">
+        <span class="benefit-icon"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M6 23h23v20H6zM4 18h27v5H4zM12 28h11M15 14V9l10-6m7 0 10 8v22"/><circle cx="35" cy="36" r="8"/><circle cx="35" cy="36" r="4"/></svg></span>
+        <h3>Free supplies</h3>
+      </article>
+      <article class="benefit-card">
+        <span class="benefit-icon"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="24" cy="24" r="20"/><circle cx="24" cy="19" r="7"/><path d="M12 40v-4c0-6 5-10 12-10s12 4 12 10v4"/></svg></span>
+        <h3>View and manage your bills online</h3>
+      </article>
+    </div>
+  </div>
+</section>
+
+<dialog #accountDialog class="account-dialog" aria-labelledby="account-dialog-title" aria-describedby="account-dialog-intro" (click)="onBackdrop($event)" (close)="restoreScroll()">
+  <div class="dialog-header">
+    <div><span class="dialog-eyebrow">LET’S GROW YOUR BUSINESS</span><h2 id="account-dialog-title">Open a shipping account</h2></div>
+    <button class="dialog-close" type="button" aria-label="Close account form" (click)="closeAccount()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+  </div>
+  <form [formGroup]="form" (ngSubmit)="submitAccount()" novalidate>
+    <div class="dialog-body">
+      <p class="dialog-intro" id="account-dialog-intro">Contact us to create a shipping account for your company and we'll be in touch in 1 business day. Please fill the mandatory field(s) marked with an asterisk.</p>
+      <p class="business-day-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Note: Inquiries received on Friday or Public Holidays will be responded on the next business day.</span></p>
+      <div class="account-form-grid">
+        @for (field of fields; track field.key) {
+          <div class="account-field" [class.full-width]="field.wide">
+            <label [for]="'account-' + field.key">{{ field.label }} @if (field.required) { <span aria-hidden="true">*</span> } @else { <small>optional</small> }</label>
+            <input [id]="'account-' + field.key" [type]="field.type" [formControlName]="field.key" [placeholder]="field.placeholder" [autocomplete]="field.autocomplete" [required]="field.required" [attr.aria-invalid]="!!error(field.key)" [attr.aria-describedby]="error(field.key) ? 'account-error-' + field.key : null" />
+            @if (error(field.key)) { <p class="account-error" [id]="'account-error-' + field.key">{{ error(field.key) }}</p> }
+          </div>
+        }
+        <div class="account-field full-width"><label for="account-message">Message <small>optional</small></label><textarea id="account-message" formControlName="message" rows="3" placeholder="Tell us about your shipping needs"></textarea></div>
+        <div class="account-field full-width">
+          <label for="account-service">Service Type <span aria-hidden="true">*</span></label>
+          <div class="service-select"><select id="account-service" formControlName="service" required [attr.aria-invalid]="!!error('service')" [attr.aria-describedby]="error('service') ? 'account-error-service' : null"><option value="" disabled>Select Service</option><option value="domestic">Domestic</option><option value="international">International</option></select><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></div>
+          @if (error('service')) { <p class="account-error" id="account-error-service">{{ error('service') }}</p> }
+        </div>
+      </div>
+      <div class="account-consents">
+        <label class="consent"><input type="checkbox" formControlName="promotions" /><span>I agree to receive regular communications of promotions, information and news on specific Egypt Express solutions per email.</span></label>
+        <div><label class="consent"><input type="checkbox" formControlName="privacy" required [attr.aria-invalid]="!!error('privacy')" [attr.aria-describedby]="error('privacy') ? 'account-error-privacy' : null" /><span>I have read the <a href="/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a> <span class="required-mark" aria-hidden="true">*</span></span></label>@if (error('privacy')) { <p class="account-error" id="account-error-privacy">{{ error('privacy') }}</p> }</div>
+      </div>
+      @if (notice()) { <p class="account-notice" role="status">{{ notice() }}</p> }
+    </div>
+    <div class="dialog-footer"><span><span class="required-mark" aria-hidden="true">*</span> Required fields</span><div><button class="cancel-account" type="button" (click)="closeAccount()">Cancel</button><button class="submit-account" type="submit">Submit request <span aria-hidden="true">→</span></button></div></div>
+  </form>
+</dialog>

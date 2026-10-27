@@ -1,5 +1,6 @@
-import { Component, ElementRef, HostListener, ViewChild, input, output, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, ElementRef, HostListener, ViewChild, computed, inject, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { AuthState } from '../../../shared/stats/auth-state';
 
 @Component({
   selector: 'app-nav',
@@ -8,11 +9,40 @@ import { RouterLink } from '@angular/router';
   styleUrl: './nav.css',
 })
 export class Nav {
-  readonly isLoggedIn = input(false);
-  readonly logoutRequested = output<void>();
+  readonly authState = inject(AuthState);
   readonly activeMenu = signal<string | null>(null);
   readonly mobileOpen = signal(false);
   readonly searchOpen = signal(false);
+  readonly searchQuery = signal('');
+  readonly searchRecommendations = [
+    { label: 'About', route: '/home', destination: 'about', keywords: 'about us company about egxpress من نحن عن الشركة عنا عن ايجي اكسبريس نبذة عن الشركة' },
+    { label: 'Complain', route: '/home', destination: 'complain', keywords: 'complaint complaints file complain شكوى شكوي شكاوى شكاوي تقديم شكوى' },
+    { label: 'ContactUs', route: '/home', destination: 'contact-us', keywords: 'contact us support تواصل معنا اتصل بنا اتصل بينا تواصل معانا خدمة العملاء' },
+    { label: 'Track', route: '/home', destination: 'track', keywords: 'tracking shipment tracking تتبع تتبع الشحنة تتبع شحنتك تتبع شحنتي' },
+    { label: 'Create shipments', route: '/home', destination: 'create-shipments', keywords: 'ship shipping shipment إنشاء شحنة انشاء شحنة شحن شحنات ارسل شحنة' },
+    { label: 'Create Pickup', route: '/home', destination: 'create-pickup', keywords: 'pickup pick up schedule pickup إنشاء طلب استلام انشاء طلب استلام طلب استلام حجز استلام استلام شحنة' },
+    { label: 'Get rate', route: '/home', destination: 'get-rate', keywords: 'rates price pricing quote احسب السعر احسب سعر الشحن اسعار أسعار تكلفة الشحن تسعير' },
+    { label: 'Service', route: '/home', destination: 'services', keywords: 'services logistics خدمات خدماتنا الخدمات خدمة خدمات الشحن' },
+    { label: 'News', route: '/home', destination: 'news', keywords: 'news updates أخبار اخبار أخبارنا اخبارنا آخر الأخبار اخر الاخبار' },
+    { label: 'Our location', route: '/home', destination: 'our-location', keywords: 'locations branches branch offices فروعنا فروع الفروع مواقعنا' },
+    { label: 'Supply request', route: '/home', destination: 'supply-request', keywords: 'supplies packaging supply request طلب مستلزمات مستلزمات الشحن طلب مواد تغليف تغليف' },
+    { label: 'FAQs', route: '/home', destination: 'faqs', keywords: 'faq questions help الأسئلة الشائعة الاسئلة الشائعة أسئلة شائعة اسئلة شائعة سؤال مساعدة' },
+  ];
+  private normalizeSearch(value: string) { return value.toLowerCase().replace(/[\u064b-\u065f\u0670\u0640]/g, '').replace(/[أإآ]/g, 'ا').replace(/ى/g, 'ي').replace(/[^a-z0-9\u0600-\u06ff]/g, ''); }
+  readonly filteredRecommendations = computed(() => {
+    const query = this.normalizeSearch(this.searchQuery());
+    return this.searchRecommendations.filter(item => !query || this.normalizeSearch(item.label).includes(query) || this.normalizeSearch(item.keywords).includes(query));
+  });
+  submitSearch(event: Event) {
+    event.preventDefault();
+    if (!this.searchQuery().trim()) return;
+    const exact = this.searchRecommendations.find(item => this.normalizeSearch(item.label) === this.normalizeSearch(this.searchQuery()));
+    const match = exact ?? this.filteredRecommendations()[0];
+    if (match) {
+      void this.router.navigate([match.route], { queryParams: { destination: match.destination } });
+      this.closeSearch();
+    }
+  }
   readonly scrolled = signal(false);
   readonly language = signal<'AR' | 'EN'>('EN');
   @ViewChild('searchInput')
@@ -21,6 +51,7 @@ export class Nav {
   }
   openSearch() {
     this.close();
+    this.searchQuery.set('');
     this.searchOpen.set(true);
   }
   closeSearch() {
@@ -31,9 +62,9 @@ export class Nav {
     { id: 'shipping', label: 'Shipping', heading: 'Shipping', image: 'shippments.png', links: ['Ship All Features', 'Packaging & Shipping Supplies'], action: 'GET RATES AND TRANSIT TIMES' },
     { id: 'tracking', label: 'Tracking', heading: 'Track My Shipment', image: 'tracking.png', links: ['Advanced Shipment Tracking', 'Track by Mobile'], action: 'ALL TRACKING SERVICES' },
     { id: 'support', label: 'Support', heading: 'Support', image: 'Support.jpg', links: ['File a Complaint', 'Locations', 'FAQs', 'Contact Us'], action: 'CUSTOMER SUPPORT' },
-    { id: 'news', label: 'NEWS', heading: 'News & Insights', image: 'news.jpg', links: ['Blogs', 'News', 'Articles'], action: null },
+    { id: 'news', label: 'NEWS', heading: 'News & Insights', image: 'News.png', links: ['Blogs', 'News', 'Articles'], action: null },
   ];
-  constructor(private readonly element: ElementRef<HTMLElement>) {
+  constructor(private readonly element: ElementRef<HTMLElement>, private readonly router: Router) {
     this.onScroll();
   }
   @HostListener('window:scroll')
@@ -51,8 +82,9 @@ export class Nav {
     this.mobileOpen.set(false);
   }
   logout() {
+    this.authState.clearCredentials();
     this.close();
-    this.logoutRequested.emit();
+    void this.router.navigateByUrl('/login');
   }
   @HostListener('document:click', ['$event'])
   onOutsideClick(event: MouseEvent) {

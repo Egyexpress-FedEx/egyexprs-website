@@ -1,0 +1,41 @@
+:host { display: block; background: #fafbfc; }
+.calculator-page { max-width: 1160px; margin: auto; padding: 80px 28px 76px; }
+.eyebrow { display: block; color: #c65a0a; font-size: 10px; letter-spacing: 1.8px; font-weight: 700; }
+.page-heading h1 { margin: 12px 0 15px; font-size: clamp(30px,4vw,40px); font-weight: 700; letter-spacing: -1.2px; color: #202c37; }
+.heading-line { display: block; width: 72px; height: 1px; background: #151515; }
+.page-heading p { margin: 18px 0 28px; color: #65727e; font-size: 14px; line-height: 1.7; }
+.calculator-card { padding: 30px; border: 1px solid #e5e9ed; border-radius: 16px; background: #fff; box-shadow: 0 8px 32px #26394b04; }
+.card-heading { display: flex; align-items: center; gap: 13px; margin-bottom: 25px; padding-bottom: 22px; border-bottom: 1px solid #eef0f2; }
+.shipment-icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: #fff3e9; color: #e8680b; }
+.shipment-icon svg { width: 25px; height: 25px; }
+.card-heading h2 { margin: 0 0 5px; font-size: 18px; font-weight: 700; color: #2c3945; }
+.card-heading p { margin: 0; font-size: 12px; color: #6b7783; }
+.result-dialog { box-sizing: border-box; width: min(610px,calc(100% - 28px)); max-height: calc(100dvh - 40px); margin: auto; overflow: auto; padding: 32px; border: 0; border-radius: 18px; background: #fff; color: #2c3945; box-shadow: 0 24px 90px #0004; }
+.result-dialog::backdrop { background: #061724a8; backdrop-filter: blur(4px); }
+.close-result { position: absolute; top: 16px; right: 16px; display: grid; place-items: center; width: 30px; height: 30px; padding: 6px; border: 1px solid #e6eaee; border-radius: 50%; color: #78838d; background: #fff; }
+.close-result svg { width: 18px; height: 18px; }
+.result-heading { text-align: center; }
+.success-icon { display: grid; place-items: center; width: 54px; height: 54px; margin: 0 auto 18px; border-radius: 50%; color: #e96b11; background: #fff3e9; }
+.success-icon svg { width: 30px; height: 30px; }
+.result-heading h2 { margin: 9px 0; font-size: 27px; font-weight: 700; letter-spacing: -.5px; }
+.result-heading p,.estimate-note { color: #6d7984; font-size: 14px; line-height: 1.7; }
+.total-card { margin-top: 22px; padding: 20px; text-align: center; border: 1px solid #ffdfc7; border-radius: 12px; background: #fff7f0; }
+.total-card>span { color: #9a7455; font-size: 12px; }
+.total-card strong { display: block; margin-top: 7px; font-size: 32px; color: #e76606; }
+.total-card small { font-size: 12px; }
+.breakdown { margin: 18px 0; }
+.breakdown div { display: flex; justify-content: space-between; gap: 16px; padding: 13px 0; border-bottom: 1px solid #edf0f2; font-size: 13px; }
+.breakdown dt { color: #7a8792; font-weight: var(--font-weight-regular); }
+.breakdown dd { margin: 0; font-weight: 700; }
+.breakdown small { font-size: 12px; color: #6d7984; font-weight: var(--font-weight-regular); }
+.international-totals { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.international-totals strong { font-size: 25px; overflow-wrap: anywhere; }
+.charges-scroll { max-height: 280px; overflow: auto; margin: 20px 0; border: 1px solid #e9edf1; border-radius: 8px; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th,td { padding: 12px; border-bottom: 1px solid #edf0f2; text-align: left; }
+th { position: sticky; top: 0; color: #71808c; background: #f8fafb; font-size: 12px; }
+.estimate-note { margin: 18px 0; text-align: center; font-size: 14px; }
+.done-button { display: flex; justify-content: center; gap: 15px; width: 100%; padding: 12px 20px; border: 0; border-radius: 24px; background: var(--color-primary); color: white; font-size: 13px; font-weight: 700; }
+button { cursor: pointer; }
+button:focus-visible { outline: 3px solid #ff6b0080; outline-offset: 3px; }
+@media(max-width:575px) { .calculator-page { padding: 50px 16px 40px; } .calculator-card { padding: 20px 16px; } .result-dialog { padding: 28px 20px 22px; } .international-totals { grid-template-columns: 1fr; gap: 0; } }

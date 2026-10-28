@@ -41,7 +41,7 @@
           <div class="example-row"><a class="download-example" href="#download-example">Download Example</a></div>
         }
       } @else if (selectedAction() === 'rate') {
-        <a class="service-link" routerLink="/home/rate">GET RATES AND TRANSIT TIMES</a>
+        <a class="service-link" [routerLink]="auth.isLoggedIn() ? '/rate' : '/home/rate'">GET RATES AND TRANSIT TIMES</a>
       } @else {
         <a class="service-link" href="#ship">SHIP A SHIPMENT</a>
       }

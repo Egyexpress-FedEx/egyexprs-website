@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, Input, computed, inject, output, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
@@ -27,6 +27,8 @@ function packageRow() {
   styleUrl: './international-form.css',
 })
 export class InternationalForm {
+  @Input() pageMode = false;
+  readonly rateCalculated = output<InternationalRateResult>();
   readonly maxBoxes = 100;
   readonly boxCountError = signal('');
   readonly dropdowns = inject(InternationalDropdowns);
@@ -88,13 +90,22 @@ export class InternationalForm {
         cl_DimL: String(nonNegative(row.length)), cl_DimW: String(nonNegative(row.width)), cl_DimH: String(nonNegative(row.height)),
       })),
     }).pipe(finalize(() => this.loading.set(false))).subscribe({
-      next: result => this.result.set(result),
+      next: result => { this.result.set(result); this.rateCalculated.emit(result); },
       error: error => this.error.set(error.message || 'Unable to calculate the international rate.'),
     });
   }
 
   resetBox(index: number): void {
     this.packages.at(index).setValue({ length: 0, width: 0, height: 0, actualWeight: 0 });
+  }
+
+  resetForm(): void {
+    this.shipment.reset({ direction: this.shipment.controls.direction.value, product: '', country: '', city: '', zipCode: '' }, { emitEvent: false });
+    while (this.packages.length > 1) this.packages.removeAt(this.packages.length - 1, { emitEvent: false });
+    this.packages.at(0).reset({ length: null, width: null, height: null, actualWeight: 0 });
+    this.boxCountError.set('');
+    this.error.set('');
+    this.result.set(null);
   }
 
   setBoxCount(event: Event): void {

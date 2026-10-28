@@ -1,5 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { AuthState } from '../../shared/stats/auth-state';
 
 @Component({
   selector: 'app-footer',
@@ -8,6 +9,7 @@ import { RouterLink } from '@angular/router';
   styleUrl: './footer.css',
 })
 export class Footer {
+  readonly auth = inject(AuthState);
   readonly language = signal<'en' | 'ar'>('en');
   closeLanguageOnBlur(event: FocusEvent, menu: HTMLDetailsElement) {
     if (!(event.relatedTarget instanceof Node) || !menu.contains(event.relatedTarget)) menu.open = false;

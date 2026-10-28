@@ -86,6 +86,13 @@ export class Nav {
     this.close();
     void this.router.navigateByUrl('/login');
   }
+  async openRates(event: MouseEvent): Promise<void> {
+    if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    const destination = this.authState.isLoggedIn() ? '/rate' : '/home/rate/domestic';
+    await this.router.navigateByUrl(destination);
+    this.close();
+  }
   @HostListener('document:click', ['$event'])
   onOutsideClick(event: MouseEvent) {
     if (!this.element.nativeElement.contains(event.target as Node)) this.close();

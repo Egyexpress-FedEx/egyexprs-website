@@ -2,7 +2,7 @@
 import { Routes } from '@angular/router';
 import { inject } from '@angular/core';
 import { AuthState } from './shared/stats/auth-state';
-import { guestGuard } from './shared/guards/auth.guard';
+import { authGuard, guestGuard } from './shared/guards/auth.guard';
 
 export const routes: Routes = [
     {path:'' , redirectTo:'home' , pathMatch:'full'},
@@ -21,6 +21,11 @@ export const routes: Routes = [
         }]
     },
 
+    {
+        path: 'rate',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/core-features/rating/page/rate-page/rate-page').then(c => c.RatePage)
+    },
     //Auth routes 
     {
         path:'login',

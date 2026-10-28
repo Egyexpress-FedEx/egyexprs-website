@@ -10,7 +10,7 @@
         <h2 id="footer-company">Our company</h2>
         <a href="#about-egxpress">About EGXPRESS</a>
         <a href="#find-locations">Locations</a>
-        <a href="#check-shipping-rate">Rates</a>
+        <a [routerLink]="auth.isLoggedIn() ? '/rate' : '/home/rate/domestic'">Rates</a>
         <a href="#careers">Careers</a>
         <a href="#conditions-of-carriage">Conditions of Carriage</a>
       </nav>

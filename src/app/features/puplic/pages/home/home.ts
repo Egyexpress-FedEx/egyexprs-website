@@ -1,5 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
+import { AuthState } from '../../../../shared/stats/auth-state';
 
 @Component({
   imports: [RouterLink, RouterOutlet],
@@ -8,6 +9,7 @@ import { RouterLink, RouterOutlet } from '@angular/router';
   templateUrl: './home.html',
 })
 export class Home {
+  readonly auth = inject(AuthState);
   readonly selectedAction = signal('track');
   readonly multiple = signal(false);
   readonly fileName = signal('No file chosen');

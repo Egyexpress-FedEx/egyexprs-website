@@ -29,7 +29,11 @@
                       }
                     </ul>
                     @if (menu.action) {
+                      @if (menu.id === 'shipping') {
+                      <a class="menu-action" [attr.href]="authState.isLoggedIn() ? '/rate' : '/home/rate/domestic'" (click)="openRates($event)">{{ menu.action }}</a>
+                      } @else {
                       <a class="menu-action" [attr.href]="'#' + menu.id + '-services'" (click)="close()">{{ menu.action }}</a>
+                      }
                     }
                   </div>
                   <img class="menu-image" [class.tracking-image]="menu.id === 'tracking'" [class.news-image]="menu.id === 'news'" [src]="'/images/' + menu.image" [alt]="menu.heading" />

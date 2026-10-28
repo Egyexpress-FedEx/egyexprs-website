@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, Input, inject, output, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -18,6 +18,8 @@ import { ScrollToRate } from '../../scroll-to-rate';
   templateUrl: './dom-rate.html',
 })
 export class DomRate {
+  @Input() pageMode = false;
+  readonly rateCalculated = output<DomesticRateBreakdown>();
   readonly auth = inject(AuthState);
   readonly dropdowns = inject(Dropdowns);
   private readonly query = inject(DomesticRateQueryService);
@@ -31,6 +33,10 @@ export class DomRate {
   };
 
   clearResult(): void { this.result.set(null); this.error.set(''); }
+  resetForm(): void {
+    Object.assign(this.rateForm, { Prod_Type: '', Serv_Type: '', Orgn_Code: '', Dest_Code: '', Ship_Wght: null, numberOfPieces: 1, width: null, height: null, length: null });
+    this.clearResult();
+  }
 
   get dimensionalWeight(): number { return volumetricWeight(this.rateForm); }
   get billableWeight(): number { return Math.max(this.rateForm.Ship_Wght || 0, this.dimensionalWeight); }
@@ -49,7 +55,7 @@ export class DomRate {
       Prod_Type: data.Prod_Type, Serv_Type: data.Serv_Type,
       Orgn_Code: data.Orgn_Code, Dest_Code: data.Dest_Code, Ship_Wght: this.billableWeight,
     }).pipe(finalize(() => this.loading.set(false))).subscribe({
-      next: result => this.result.set(result),
+      next: result => { this.result.set(result); this.rateCalculated.emit(result); },
       error: error => this.error.set(error.error?.Description || error.message || 'Unable to calculate the rate.'),
     });
   }

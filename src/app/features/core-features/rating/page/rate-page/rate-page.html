@@ -1,0 +1,31 @@
+<section class="calculator-page" aria-labelledby="calculator-title">
+  <header class="page-heading">
+    <span class="eyebrow">{{ auth.isInternationalAccount() ? 'INTERNATIONAL SHIPPING' : 'DOMESTIC SHIPPING' }}</span>
+    <h1 id="calculator-title">Rate Calculator</h1>
+    <span class="heading-line" aria-hidden="true"></span>
+    <p>Plan your next shipment with a clear estimate of your shipping costs.</p>
+  </header>
+  <div class="calculator-card">
+    <div class="card-heading"><span class="shipment-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="m12 3 9 5v9l-9 5-9-5V8l9-5Z"/><path d="m3 8 9 5 9-5M12 13v9M7.5 5.5l9 5"/></svg></span><div><h2>Shipment details</h2><p>{{ auth.isInternationalAccount() ? 'International' : 'Domestic' }} rates for your account</p></div></div>
+    @if (auth.isInternationalAccount()) {
+      <app-international-rate-form [pageMode]="true" (rateCalculated)="showInternational($event)" />
+    } @else {
+      <app-dom-rate [pageMode]="true" (rateCalculated)="showDomestic($event)" />
+    }
+  </div>
+</section>
+
+<dialog #resultDialog class="result-dialog" aria-labelledby="result-title" (click)="onBackdrop($event)">
+  <button class="close-result" type="button" aria-label="Close rate details" (click)="closeResult()" autofocus><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+  <header class="result-heading"><span class="success-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m7 12 3 3 7-7"/><circle cx="12" cy="12" r="10"/></svg></span><span class="eyebrow">YOUR SHIPPING ESTIMATE</span><h2 id="result-title">Rate details</h2><p>A clear breakdown of your shipment charges.</p></header>
+  @if (domesticResult(); as rate) {
+    <div class="total-card"><span>Total shipping rate</span><strong>{{ rate.Total | number:'1.2-2' }} <small>EGP</small></strong></div>
+    <dl class="breakdown"><div><dt>Base rate</dt><dd>{{ rate.TrfAmnt | number:'1.2-2' }} <small>EGP</small></dd></div><div><dt>Fuel surcharge</dt><dd>{{ rate.FSCAmnt | number:'1.2-2' }} <small>EGP</small></dd></div><div><dt>GPA amount</dt><dd>{{ rate.GPAAmnt | number:'1.2-2' }} <small>EGP</small></dd></div><div><dt>Tax amount</dt><dd>{{ rate.TaxAmnt | number:'1.2-2' }} <small>EGP</small></dd></div></dl>
+  }
+  @if (internationalResult(); as rate) {
+    <div class="international-totals"><div class="total-card"><span>Total in US dollars</span><strong>{{ rate.totalUsd | number:'1.2-2' }} <small>USD</small></strong></div><div class="total-card"><span>Total in Egyptian pounds</span><strong>{{ rate.totalEgp | number:'1.2-2' }} <small>EGP</small></strong></div></div>
+    <div class="charges-scroll"><table><thead><tr><th scope="col">Charge details</th><th scope="col">USD</th><th scope="col">EGP</th></tr></thead><tbody>@for (charge of rate.charges; track $index) {<tr><td>{{ charge.ChargesDescription }}</td><td>{{ charge.Amount | number:'1.2-2' }}</td><td>{{ charge.AmountBC | number:'1.2-2' }}</td></tr>}</tbody></table></div>
+  }
+  <p class="estimate-note">This is an estimate. Final charges may vary based on shipment details and additional services.</p>
+  <button type="button" class="done-button" (click)="closeResult()">Done <span aria-hidden="true">✓</span></button>
+</dialog>

@@ -3,8 +3,9 @@
   --color-white: #ffffff;
   --color-black: #000000;
   --font-family-base: Arial, Helvetica, sans-serif;
-  --font-weight-regular: 400;
-  --font-weight-bold: 700;
+  --font-weight-regular: 500;
+  --font-weight-medium: 500;
+  --font-weight-bold: 600;
 }
 html {
   scrollbar-gutter: stable;
@@ -27,6 +28,7 @@ body {
   padding: 0;
   font-family: var(--font-family-base);
   font-weight: var(--font-weight-regular);
+  line-height: 1.6;
   color: var(--color-black);
   background-color: var(--color-white);
 }

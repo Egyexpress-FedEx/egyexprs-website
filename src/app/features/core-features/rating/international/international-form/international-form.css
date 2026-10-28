@@ -1,0 +1,47 @@
+:host { display: block; }
+.field-error { display: block; margin: 6px 0 0; color: #b84220; font-size: 11px; line-height: 1.6; }
+.rate-result { margin-top: 20px; }
+.currency-totals { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin-bottom: 12px; }
+.currency-totals>div { padding: 16px; border: 1px solid #ffe0ca; border-radius: 9px; background: #fff8f2; }
+.currency-totals span { color: #7b8690; font-size: 11px; }
+.currency-totals strong { display: block; margin-top: 5px; font-size: 23px; color: #e76000; }
+.currency-totals small { font-size: 11px; }
+.charges-table { min-width: 420px; }
+.charges-table th:first-child { width: 52%; }
+.charges-table td { font-size: 12px; color: #586674; }
+.box-actions { display: flex; justify-content: center; align-items: center; gap: 5px; }
+.box-actions svg { width: 15px; height: 15px; }
+.shipment-grid,.package-grid { display: grid; gap: 18px 24px; }
+.shipment-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.package-grid { grid-template-columns: repeat(3,minmax(0,1fr)); margin-top: 20px; }
+.field { min-width: 0; }
+label { display: block; margin: 0 0 7px; color: #39444e; font-size: 12px; font-weight: 700; }
+label span { color: #89929b; font-weight: 400; }
+input,select { display: block; box-sizing: border-box; width: 100%; min-width: 0; height: 40px; padding: 9px 11px; border: 1px solid #dce2e8; border-radius: 6px; background: #fff; color: #485460; font-family: inherit; font-size: 13px; line-height: 20px; outline: none; }
+select { padding-right: 30px; }
+input::placeholder { color: #a1a9b1; }
+input:focus,select:focus { border-color: #ff9c55; box-shadow: 0 0 0 3px #ff6b0014; }
+input[readonly] { background: #f6f8fa; color: #788490; }
+.chargeable { width: calc((100% - 24px)/2); margin-top: 20px; }
+.dimensions-heading { display: flex; align-items: center; justify-content: space-between; margin: 22px 0 6px; }
+h3 { margin: 0; color: #39444e; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+.dimensions-heading span { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; background: #fff2e8; color: #c45a0a; font-size: 11px; font-weight: 700; }
+.dimensions-heading svg { width: 16px; height: 16px; }
+.hint { margin: 0 0 10px; color: #89939d; font-size: 11px; line-height: 1.6; }
+.table-scroll { max-height: 205px; overflow: auto; border: 1px solid #dfe5ea; border-radius: 8px; scrollbar-width: thin; }
+table { width: 100%; min-width: 730px; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
+th { position: sticky; top: 0; z-index: 1; background: #f6f8fa; color: #586674; text-transform: uppercase; font-size: 10px; font-weight: 700; line-height: 1.4; }
+th,td { padding: 9px 8px; border-bottom: 1px solid #e9edf1; text-align: left; }
+th:last-child,td:last-child { width: 76px; text-align: center; }
+tbody tr:last-child td { border-bottom: 0; }
+td input { height: 33px; padding: 6px 8px; font-size: 12px; }
+.delete-box { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 28px; height: 28px; padding: 5px; border: 1px solid #ffd4b5; border-radius: 5px; background: #fff8f2; color: #e76000; cursor: pointer; }
+.delete-box:hover:not(:disabled) { background: #ffebdc; }
+.delete-box:disabled { opacity: .35; cursor: not-allowed; }
+.rate-footer { display: flex; align-items: center; gap: 16px; margin-top: 24px; }
+.rate-footer .hint { margin: 0; }
+.check-rates { display: inline-flex; align-items: center; gap: 22px; flex-shrink: 0; padding: 11px 22px; border: 0; border-radius: 24px; background: var(--color-primary); color: #fff; font-size: 13px; font-weight: 700; }
+.check-rates:disabled { opacity: .65; cursor: not-allowed; }
+.disclaimer { margin: 16px 0 0; color: #7b8690; font-size: 11px; line-height: 1.7; }
+button:focus-visible,.table-scroll:focus-visible { outline: 3px solid #ff6b0080; outline-offset: 2px; }
+@media(max-width:575px) { .shipment-grid,.package-grid { grid-template-columns: 1fr; gap: 16px; } .chargeable { width: 100%; } .rate-footer { align-items: flex-start; flex-direction: column; gap: 10px; } }

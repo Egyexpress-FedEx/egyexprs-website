@@ -54,7 +54,8 @@ export class Login {
           return;
         }
 
-        this.authState.setCredentials(response.UserCredentials);
+        this.authState.setCredentials(response.UserCredentials, this.form.controls.remember.value, this.form.controls.password.value);
+        this.form.controls.password.reset();
         void this.router.navigateByUrl('/home');
       },
       error: error => {

@@ -1,0 +1,11 @@
+<dialog #dialog class="rate-dialog" aria-labelledby="rate-title" (cancel)="$event.preventDefault(); close()" (click)="backdrop($event)">
+  <header class="rate-header">
+    <h2 id="rate-title">Shipping Rate</h2>
+    <button type="button" class="rate-close" aria-label="Close shipping rate" (click)="close()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+    <nav class="rate-tabs" aria-label="Shipping rate type">
+      <a routerLink="domestic" routerLinkActive="active" ariaCurrentWhenActive="page">Domestic</a>
+      <a routerLink="international" routerLinkActive="active" ariaCurrentWhenActive="page">International</a>
+    </nav>
+  </header>
+  <div class="rate-body"><router-outlet /></div>
+</dialog>

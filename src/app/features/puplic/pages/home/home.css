@@ -14,11 +14,13 @@ h1 strong { font-weight: var(--font-weight-regular); }
 .service-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 19px; min-width: 0; min-height: 148px; padding: 24px 12px; border: 0; background: var(--color-white); color: var(--color-black); font: inherit; cursor: pointer; transition: background-color .2s, color .2s, transform .2s; }
 .service-card:first-child { border-radius: 8px 0 0 8px; }
 .service-card:last-child { border-radius: 0 8px 8px 0; }
-.service-card svg { width: 42px; height: 42px; }
-.service-card span { font-size: 14px; font-weight: var(--font-weight-bold); line-height: 1.4; }
+.service-card svg { width: 42px; height: 42px; transition: transform .25s ease; }
+.service-card span { font-size: 14px; font-weight: var(--font-weight-bold); line-height: 1.4; transition: color .2s ease; }
+.service-card:not(.selected):hover span { color: var(--color-primary); }
 .service-card.selected { position: relative; z-index: 1; background: var(--color-primary); color: var(--color-white); border-radius: 8px; transform: scaleY(1.13); }
 .service-card.selected > * { transform: scaleY(.885); }
-.service-card:not(.selected):hover { background: #fff3e9; color: var(--color-primary); }
+.service-card:hover svg { transform: scale(1.1); }
+.service-card.selected:hover svg { transform: scaleY(.885) scale(1.1); }
 .service-panel { max-width: 540px; min-height: 145px; margin: 44px auto 0; }
 .tracking-options { display: flex; justify-content: center; gap: 34px; padding: 0; margin: 0 0 22px; border: 0; }
 .tracking-options legend { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; }
@@ -65,7 +67,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .tracking-options { gap: 16px; }
   .tracking-input button { padding-inline: 15px; }
 }
-@media (prefers-reduced-motion: reduce) { .service-card { transition: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .service-card, .service-card svg { transition: none; }
+  .service-card:hover svg { transform: none; }
+  .service-card.selected:hover svg { transform: scaleY(.885); }
+}
 
 .account-banner { background: linear-gradient(to right, var(--color-primary) 0%, var(--color-primary) 60%, var(--color-white) 60%, var(--color-white) 100%); }
 .account-banner-inner { display: grid; grid-template-columns: 3fr 2fr; max-width: 1280px; margin-inline: auto; }

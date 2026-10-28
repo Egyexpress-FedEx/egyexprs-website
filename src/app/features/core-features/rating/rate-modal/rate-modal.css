@@ -1,0 +1,13 @@
+:host { display: contents; }
+.rate-dialog { box-sizing: border-box; width: min(900px, calc(100% - 32px)); max-width: 900px; max-height: calc(100dvh - 48px); overflow-x: hidden; overflow-y: auto; margin: auto; padding: 0; border: 0; border-radius: 16px; color: #242b33; background: #fff; box-shadow: 0 24px 90px #0005; }
+.rate-dialog::backdrop { background: #061724b8; backdrop-filter: blur(3px); }
+.rate-header { position: relative; padding: 24px 52px 20px; border-bottom: 1px solid #edf0f2; text-align: center; }
+h2 { margin: 0 0 16px; font-size: 25px; font-weight: 700; letter-spacing: -.6px; }
+.rate-close { position: absolute; top: 18px; right: 18px; width: 32px; height: 32px; padding: 5px; border: 1px solid #dce1e5; border-radius: 50%; background: #fff; color: #626b73; }
+.rate-close:hover { color: #e85c00; background: #fff5ee; }
+.rate-tabs { display: inline-flex; gap: 4px; padding: 4px; border-radius: 30px; background: #f0f2f4; }
+.rate-tabs a { padding: 10px 26px; border-radius: 24px; text-decoration: none; font-size: 14px; font-weight: 700; color: #626970; }
+.rate-tabs a.active { background: var(--color-primary); color: #fff; box-shadow: 0 3px 8px #ff6b0033; }
+.rate-body { padding: 26px 36px 32px; }
+:is(a,button):focus-visible { outline: 3px solid #ff6b0080; outline-offset: 3px; }
+@media(max-width: 575px) { .rate-dialog { max-height: calc(100dvh - 24px); width: calc(100% - 20px); border-radius: 12px; } .rate-body { padding: 20px 18px; } .rate-header { padding: 24px 36px 16px; } h2 { font-size: 22px; } .rate-tabs a { padding: 9px 19px; } .rate-close { top: 12px; right: 12px; width: 28px; height: 28px; } }

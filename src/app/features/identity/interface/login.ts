@@ -9,6 +9,8 @@ export interface LoginResponse {
 }
 
 export interface UserCredentials {
+  AccountNo?: string;
+  ActiveDataBase?: string;
   CoCode: string;
   DivCode: string;
   ShipmentType: string;

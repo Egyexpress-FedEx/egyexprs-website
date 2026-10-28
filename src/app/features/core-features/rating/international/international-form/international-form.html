@@ -1,0 +1,42 @@
+<form (submit)="$event.preventDefault(); getRate()" aria-label="International shipping rate">
+  <div class="shipment-grid">
+    <div class="field"><label for="int-shipment">Shipment type</label><select id="int-shipment" name="shipmentType" [formControl]="shipment.controls.direction"><option value="EXPORT">EXPORT</option><option value="IMPORT">IMPORT</option></select></div>
+    <div class="field"><label for="int-product">Product</label><select id="int-product" name="product" [formControl]="shipment.controls.product" (focus)="dropdowns.loadProductClassifications(shipment.controls.direction.value)"><option value="">{{ dropdowns.productClassificationsLoading() ? 'Loading...' : 'Select product' }}</option>@for (product of dropdowns.productClassifications(); track product.cl_CodeID) {<option [value]="product.cl_CodeID">{{ product.cl_CodeName }}</option>}</select>@if (dropdowns.productClassificationsError()) {<small class="field-error">{{ dropdowns.productClassificationsError() }}</small>}</div>
+    <div class="field"><label for="int-country">{{ shipment.controls.direction.value === 'EXPORT' ? 'To country' : 'From country' }}</label><select id="int-country" name="country" [formControl]="shipment.controls.country" (focus)="dropdowns.loadCountries()"><option value="">{{ dropdowns.countriesLoading() ? 'Loading...' : 'Select country' }}</option>@for (country of dropdowns.countries(); track country.cl_CodeID) {<option [value]="country.cl_CodeID">{{ country.cl_CodeName }}</option>}</select>@if (dropdowns.countriesError()) {<small class="field-error">{{ dropdowns.countriesError() }}</small>}</div>
+    <div class="field"><label for="int-city">City</label><input id="int-city" name="city" [formControl]="shipment.controls.city" placeholder="City" autocomplete="address-level2" /></div>
+  </div>
+  <div class="package-grid">
+    <div class="field"><label for="int-weight">Weight <span>(kg)</span></label><input id="int-weight" name="weight" type="number" min="0.5" step="0.001" [value]="totalWeight()" readonly /></div>
+    <div class="field"><label for="int-boxes">Boxes</label><input id="int-boxes" name="boxes" type="number" min="1" [max]="maxBoxes" [attr.aria-invalid]="boxCountError() ? true : null" step="1" [value]="packages.length" (input)="setBoxCount($event)" (blur)="normalizeBoxCount($event)" aria-describedby="boxes-hint boxes-error" />@if (boxCountError()) {<small id="boxes-error" class="field-error" role="alert">{{ boxCountError() }}</small>}</div>
+    <div class="field"><label for="int-zip">Zip code</label><input id="int-zip" name="zipCode" [formControl]="shipment.controls.zipCode" placeholder="Zip code" autocomplete="postal-code" /></div>
+  </div>
+  <div class="chargeable field"><label for="int-chargeable">Total chargeable weight <span>(kg)</span></label><input id="int-chargeable" [value]="totalWeight()" readonly aria-describedby="calculation-note" /></div>
+  <div class="dimensions-heading"><h3>Package dimensions</h3><span aria-live="polite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 9 5v9l-9 5-9-5V8l9-5Z"/><path d="m3 8 9 5 9-5M12 13v9M7.5 5.5l9 5"/></svg>{{ packages.length }} {{ packages.length === 1 ? 'box' : 'boxes' }}</span></div>
+  <p id="boxes-hint" class="hint">Set the number of boxes to add a row for each package (maximum {{ maxBoxes }} boxes).</p>
+  <div class="table-scroll" role="region" aria-label="Package dimensions" tabindex="0">
+    <table>
+      <thead><tr><th scope="col">Length (cm)</th><th scope="col">Width (cm)</th><th scope="col">Height (cm)</th><th scope="col">Volumetric weight</th><th scope="col">Actual weight (kg)</th><th scope="col">Actions</th></tr></thead>
+      <tbody>
+        @for (box of packages.controls; track box; let i = $index) {
+          <tr [formGroup]="box">
+            <td><input type="number" min="0.01" step="any" formControlName="length" [attr.aria-label]="'Box ' + (i + 1) + ' length in cm'" /></td>
+            <td><input type="number" min="0.01" step="any" formControlName="width" [attr.aria-label]="'Box ' + (i + 1) + ' width in cm'" /></td>
+            <td><input type="number" min="0.01" step="any" formControlName="height" [attr.aria-label]="'Box ' + (i + 1) + ' height in cm'" /></td>
+            <td><input [value]="volumetricWeight(box.getRawValue())" readonly [attr.aria-label]="'Box ' + (i + 1) + ' volumetric weight'" /></td>
+            <td><input type="number" min="0.01" step="any" formControlName="actualWeight" [attr.aria-label]="'Box ' + (i + 1) + ' actual weight in kg'" /></td>
+            <td><div class="box-actions"><button type="button" class="delete-box" (click)="resetBox(i)" [attr.aria-label]="'Reset box ' + (i + 1)" title="Reset box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10a9 9 0 1 1 2.6 9M3 4v6h6"/></svg></button><button type="button" class="delete-box" (click)="removeBox(i)" [disabled]="packages.length === 1" [attr.aria-label]="'Delete box ' + (i + 1)" title="Delete box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/></svg></button></div></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <div class="rate-footer"><button class="check-rates" type="submit" [disabled]="loading() || !!boxCountError()">{{ loading() ? 'Calculating...' : 'Check rates' }} <span aria-hidden="true">→</span></button><span id="calculation-note" class="hint">Chargeable weight uses the greater of actual and volumetric weight for each box, with a minimum total of 0.5 kg.</span></div>
+  @if (error()) {<p class="field-error" role="alert">{{ error() }}</p>}
+  @if (result(); as rate) {
+    <section class="rate-result" [appScrollToRate]="rate" aria-label="International rate breakdown" aria-live="polite">
+      <div class="currency-totals"><div><span>Total in US dollars</span><strong>{{ rate.totalUsd | number:'1.2-2' }} <small>USD</small></strong></div><div><span>Total in Egyptian pounds</span><strong>{{ rate.totalEgp | number:'1.2-2' }} <small>EGP</small></strong></div></div>
+      <div class="table-scroll"><table class="charges-table"><thead><tr><th scope="col">Charge details</th><th scope="col">USD</th><th scope="col">EGP</th></tr></thead><tbody>@for (charge of rate.charges; track $index) {<tr><td>{{ charge.ChargesDescription }}</td><td>{{ charge.Amount | number:'1.2-2' }}</td><td>{{ charge.AmountBC | number:'1.2-2' }}</td></tr>}</tbody></table></div>
+    </section>
+  }
+  <p class="disclaimer">Estimated prices are based on your shipment details. Final charges may vary depending on actual or volumetric weight, destination, and requested additional services.</p>
+</form>

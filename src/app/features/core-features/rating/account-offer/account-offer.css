@@ -1,0 +1,11 @@
+.account-offer { display: flex; align-items: center; gap: 16px; padding: 20px; border: 1px solid #ffe0ca; border-radius: 12px; background: linear-gradient(110deg,#fff6ed,#fffcf9); }
+.offer-icon { display: grid; place-items: center; flex: 0 0 44px; height: 44px; border-radius: 12px; background: #ff6b0014; color: #e65e00; }
+svg { width: 25px; height: 25px; }
+.offer-copy { flex: 1; }
+.offer-eyebrow { display: block; margin-bottom: 5px; color: #b94c00; font-size: 9px; font-weight: 700; letter-spacing: 1.3px; }
+h3 { margin: 0 0 5px; font-size: 16px; font-weight: 700; line-height: 1.35; color: #293743; }
+p { margin: 0; color: #727980; font-size: 12px; line-height: 1.6; }
+a { flex-shrink: 0; display: inline-flex; gap: 14px; align-items: center; padding: 11px 14px; border-radius: 7px; background: #ff6b00; color: #fff; text-decoration: none; font-size: 12px; font-weight: 700; }
+a:hover { background: #e85c00; }
+a:focus-visible { outline: 3px solid #ff6b0080; outline-offset: 3px; }
+@media(max-width: 650px) { .account-offer { flex-wrap: wrap; gap: 12px; padding: 16px; } .offer-copy { flex-basis: calc(100% - 60px); } a { margin-left: 56px; } }

@@ -6,6 +6,22 @@
   --font-weight-regular: 400;
   --font-weight-bold: 700;
 }
+html {
+  scrollbar-gutter: stable;
+}
+
+html:has(dialog:modal, .modal.show, [aria-modal="true"]:not([hidden])),
+body:has(dialog:modal, .modal.show, [aria-modal="true"]:not([hidden])) {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+dialog:modal,
+.modal.show,
+[aria-modal="true"]:not([hidden]) {
+  overscroll-behavior: contain;
+}
+
 body {
   margin: 0;
   padding: 0;

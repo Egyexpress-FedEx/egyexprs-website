@@ -1,19 +1,71 @@
 import { Service, computed, signal } from '@angular/core';
 import { UserCredentials } from '../../features/identity/interface/login';
 
+export type AccountSession = Omit<UserCredentials, 'UserPWD'>;
+const SESSION_KEY = 'egxpress.account-session';
+const SESSION_FIELDS = ['CoCode', 'DivCode', 'ShipmentType', 'UserID', 'UserName', 'UserTag', 'UserType'] as const;
+
 @Service()
 export class AuthState {
-  private readonly credentialsState = signal<UserCredentials | null>(null);
+  private readonly apiPasswordState = signal('');
+  readonly apiPassword = this.apiPasswordState.asReadonly();
+  private readonly credentialsState = signal<AccountSession | null>(this.restoreSession());
 
   readonly credentials = this.credentialsState.asReadonly();
   readonly isLoggedIn = computed(() => this.credentials() !== null);
+  readonly shipmentType = computed(() => this.credentials()?.ShipmentType?.trim().toUpperCase() ?? '');
+  readonly isDomesticAccount = computed(() => this.shipmentType() === 'D');
+  readonly isInternationalAccount = computed(() => this.shipmentType() === 'I');
   readonly userName = computed(() => this.credentials()?.UserName ?? '');
 
-  setCredentials(credentials: UserCredentials): void {
-    this.credentialsState.set(credentials);
+  setCredentials(credentials: UserCredentials, remember = false, loginPassword = ''): void {
+    this.apiPasswordState.set(credentials.UserPWD || loginPassword);
+    const session = this.readSession(credentials);
+    this.removeStoredSession();
+    this.credentialsState.set(session);
+    if (session) {
+      try {
+        const storage = remember ? globalThis.localStorage : globalThis.sessionStorage;
+        storage.setItem(SESSION_KEY, JSON.stringify(session));
+      } catch { /* Login still works when browser storage is unavailable. */ }
+    }
   }
 
   clearCredentials(): void {
+    this.apiPasswordState.set('');
+    this.removeStoredSession();
     this.credentialsState.set(null);
+  }
+
+  private readSession(value: unknown): AccountSession | null {
+    if (!value || typeof value !== 'object') return null;
+    const data = value as Record<string, unknown>;
+    if (!SESSION_FIELDS.every(field => typeof data[field] === 'string') || !String(data['UserID']).trim()) return null;
+    const session = Object.fromEntries(SESSION_FIELDS.map(field => [field, data[field]])) as AccountSession;
+    if (typeof data['AccountNo'] === 'string') session.AccountNo = data['AccountNo'];
+    if (typeof data['ActiveDataBase'] === 'string') session.ActiveDataBase = data['ActiveDataBase'];
+    return session;
+  }
+
+  private restoreSession(): AccountSession | null {
+    for (const storageName of ['sessionStorage', 'localStorage'] as const) {
+      try {
+        const storage = globalThis[storageName];
+        const stored = storage.getItem(SESSION_KEY);
+        if (!stored) continue;
+        const session = this.readSession(JSON.parse(stored));
+        if (session) return session;
+        storage.removeItem(SESSION_KEY);
+      } catch {
+        try { globalThis[storageName].removeItem(SESSION_KEY); } catch { /* Storage may be blocked. */ }
+      }
+    }
+    return null;
+  }
+
+  private removeStoredSession(): void {
+    for (const storageName of ['sessionStorage', 'localStorage'] as const) {
+      try { globalThis[storageName].removeItem(SESSION_KEY); } catch { /* Storage may be blocked. */ }
+    }
   }
 }

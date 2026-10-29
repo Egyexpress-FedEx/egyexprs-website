@@ -25,7 +25,13 @@
                     }
                     <ul class="dropdown-links">
                       @for (link of menu.links; track link) {
-                        <li><a [attr.href]="'#' + menu.id + '-' + $index" (click)="close()">{{ link }}</a></li>
+                        <li>
+                          @if (menu.id === 'shipping' && $index === 0) {
+                            <a routerLink="/shipping" (click)="close()">{{ link }}</a>
+                          } @else {
+                            <a [attr.href]="'#' + menu.id + '-' + $index" (click)="close()">{{ link }}</a>
+                          }
+                        </li>
                       }
                     </ul>
                     @if (menu.action) {

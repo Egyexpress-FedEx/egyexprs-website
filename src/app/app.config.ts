@@ -10,7 +10,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideHttpClient(withInterceptors([loadingInterceptor])),
     provideRouter(routes, withInMemoryScrolling({
-      scrollPositionRestoration: 'top',
+      scrollPositionRestoration: 'enabled',
     }))
   ]
 };

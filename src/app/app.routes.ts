@@ -26,6 +26,28 @@ export const routes: Routes = [
         canActivate: [authGuard],
         loadComponent: () => import('./features/core-features/rating/page/rate-page/rate-page').then(c => c.RatePage)
     },
+    {
+        path: 'shipping',
+        canActivate: [authGuard],
+        canActivateChild: [authGuard],
+        loadComponent: () => import('./features/core-features/shipping/mage-bar/mage-bar').then(c => c.MageBar),
+        children: [
+            { path: '', redirectTo: 'pickups/schedule', pathMatch: 'full' },
+            { path: 'pickups', redirectTo: 'pickups/schedule', pathMatch: 'full' },
+            { path: 'pickups/schedule', loadComponent: () => import('./features/core-features/picking/schedule-pinkup/schedule-pinkup').then(c => c.SchedulePinkup) },
+            ...[
+                { path: 'create-shipments', title: 'Create shipments' },
+                { path: 'batch-shipments', title: 'Batch shipments' },
+                { path: 'shipments', title: 'Shipments' },
+                { path: 'pickups/manage', title: 'Manage pickups' },
+                { path: 'address-book', title: 'Address book' },
+            ].map(page => ({
+                path: page.path,
+                data: { title: page.title },
+                loadComponent: () => import('./features/core-features/shipping/mage-bar/mage-bar').then(c => c.ShippingPlaceholder),
+            })),
+        ],
+    },
     //Auth routes 
     {
         path:'login',

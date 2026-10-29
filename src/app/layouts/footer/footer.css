@@ -29,6 +29,9 @@
 .footer-bottom p { margin: 0; font-size: 12px; line-height: 1.6; }
 .footer-bottom nav { display: flex; align-items: center; gap: 20px; font-size: 12px; }
 .footer-bottom nav span { width: 1px; height: 12px; background: #626872; }
+.footer-main > *, .footer-social-row > *, .footer-bottom-inner > * { min-width: 0; }
+.footer-column a, .footer-bottom p { overflow-wrap: anywhere; }
+.footer-bottom nav { flex-wrap: wrap; }
 a:focus-visible, summary:focus-visible, button:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 4px; }
 @media (max-width: 1050px) {
   .footer-main { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 30px 24px; }
@@ -46,6 +49,10 @@ a:focus-visible, summary:focus-visible, button:focus-visible { outline: 2px soli
   .footer-bottom nav { gap: 16px; }
 }
 @media (prefers-reduced-motion: reduce) { .site-footer a { transition: none; } }
+@media (max-width: 360px) {
+  .footer-inner, .footer-bottom-inner { padding-inline: 16px; }
+  .footer-main { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+}
 
 .language-select { position: relative; width: 100%; border: 1px solid #dce0e5; border-radius: 10px; background: #fff; }
 .language-select[open] { border-color: var(--color-primary); box-shadow: 0 0 0 3px #ff6b0010; }

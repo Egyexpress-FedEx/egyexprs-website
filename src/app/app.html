@@ -1,5 +1,8 @@
 <app-nav id="top" />
 <main>
+  @if (!navigationHistory.current()?.url?.startsWith('/shipping/')) {
+    <app-navigation-history />
+  }
   <router-outlet></router-outlet>
 </main>
 <app-footer />

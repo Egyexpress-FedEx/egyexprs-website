@@ -1,0 +1,18 @@
+<div class="shipping-layout" [class.collapsed]="collapsed()" [class.mobile-open]="mobileOpen()">
+  <aside class="shipping-sidebar" aria-label="Shipping tools">
+    <button #mobileMenuButton class="mobile-menu-toggle" type="button" (click)="toggleMobileMenu()" [attr.aria-expanded]="mobileOpen()" aria-controls="shipping-navigation"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span><strong>Shipping tools</strong><small>{{ mobileOpen() ? 'Choose where to go' : 'Tap to browse shipping services' }}</small></span><svg class="mobile-menu-chevron" viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="mobileOpen() ? 'm6 15 6-6 6 6' : 'm6 9 6 6 6-6'"/></svg></button>
+    <div class="sidebar-heading"><span>YOUR SHIPPING HUB</span><button type="button" (click)="collapsed.set(!collapsed())" [attr.aria-expanded]="!collapsed()" aria-controls="shipping-navigation" [attr.aria-label]="collapsed() ? 'Expand sidebar' : 'Collapse sidebar'"><svg viewBox="0 0 24 24"><path [attr.d]="collapsed() ? 'm9 6 6 6-6 6' : 'm15 6-6 6 6 6'"/></svg></button></div>
+    <nav id="shipping-navigation" (keydown.escape)="closeMobileMenu()">
+      @for (link of links; track link.path) {
+        <a [routerLink]="link.path" routerLinkActive="active" (click)="closeMobileMenu()" ariaCurrentWhenActive="page" [attr.title]="link.label"><svg viewBox="0 0 24 24"><path [attr.d]="link.icon"/></svg><span>{{ link.label }}</span></a>
+      }
+      <button class="pickup-toggle" type="button" (click)="collapsed() ? collapsed.set(false) : pickupsOpen.set(!pickupsOpen())" [attr.aria-expanded]="pickupsOpen() && !collapsed()" aria-controls="pickup-navigation" title="Pickups"><svg viewBox="0 0 24 24"><path d="M3 16V7h11v9M14 10h4l3 4v4h-2M7 18h8M3 18H1m6 0a2 2 0 1 0-4 0 2 2 0 0 0 4 0Zm12 0a2 2 0 1 0-4 0 2 2 0 0 0 4 0ZM6 4h5"/></svg><span>Pickups</span><svg class="chevron" viewBox="0 0 24 24"><path [attr.d]="pickupsOpen() ? 'm6 14 6-6 6 6' : 'm6 10 6 6 6-6'"/></svg></button>
+      @if (pickupsOpen() && !collapsed()) {
+        <div class="subnav" id="pickup-navigation"><a routerLink="pickups/schedule" routerLinkActive="active" (click)="closeMobileMenu()" ariaCurrentWhenActive="page">Schedule a pickup</a><a routerLink="pickups/manage" routerLinkActive="active" (click)="closeMobileMenu()" ariaCurrentWhenActive="page">Manage pickups</a></div>
+      }
+      <a routerLink="address-book" routerLinkActive="active" (click)="closeMobileMenu()" ariaCurrentWhenActive="page" title="Address book"><svg viewBox="0 0 24 24"><path d="M5 3h15v18H5zM2 7h5M2 12h5M2 17h5M9 18v-1a4 3 0 0 1 8 0v1ZM15 9a2 2 0 1 0-4 0 2 2 0 0 0 4 0Z"/></svg><span>Address book</span></a>
+    </nav>
+    <div class="sidebar-note"><span class="note-mark">↗</span><strong>Shipping made simple.</strong><p>Everything you need,<br>all in one place.</p></div>
+  </aside>
+  <div class="shipping-content"><app-navigation-history class="embedded" /><router-outlet /></div>
+</div>

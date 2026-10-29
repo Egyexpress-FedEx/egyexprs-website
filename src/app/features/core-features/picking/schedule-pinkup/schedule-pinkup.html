@@ -1,0 +1,77 @@
+<div class="pickup-page">
+  <header class="page-heading"><h1>Schedule a Pickups</h1></header>
+  <form #pickupForm (input)="validatePickup(pickupForm)" (change)="validatePickup(pickupForm)" (reset)="requiredFieldsValid.set(false); submissionError.set('')" (submit)="$event.preventDefault(); submitPickup(pickupForm)" novalidate>
+    <section class="form-card" aria-labelledby="address-heading">
+      <div class="section-heading"><span class="step">01</span><h2 id="address-heading">Where should we pick up your shipment?</h2></div>
+      @if (addressLoading()) { <p class="hours-note" role="status">Loading your collection address…</p> }
+@if (addressError()) { <p class="hours-note" role="alert">{{ addressError() }}</p> }
+<div class="fields address-fields">
+        <label>Company Name <span>*</span><input name="company" required [formControl]="address.controls.company" autocomplete="organization" placeholder="Company name" /></label>
+        <label>Contact Person<input name="contact" [formControl]="address.controls.contact" autocomplete="name" placeholder="Contact person" /></label>
+        <label class="full">Address Line 1 <span>*</span><input name="address" required [formControl]="address.controls.address" autocomplete="address-line1" placeholder="Building number and street name" /></label>
+        <label class="full">Address Line 2 (Area)<input name="area" [formControl]="address.controls.area" autocomplete="address-line2" placeholder="Area, floor or nearby landmark" /></label>
+        <label>Collection Hub City <span>*</span><select name="city" required autocomplete="address-level2" [formControl]="address.controls.city" [attr.aria-busy]="dropdowns.citiesLoading()"><option value="">{{ dropdowns.citiesLoading() ? "Loading cities…" : "Select collection hub city" }}</option>@for (city of dropdowns.cities(); track city.cl_CodeID) { <option [value]="city.cl_CodeID">{{ city.cl_CodeName }}</option> }</select>@if (dropdowns.citiesError()) { <small role="alert">{{ dropdowns.citiesError() }}</small> }</label>
+        <label>Telephone <span>*</span><input name="telephone" required [formControl]="address.controls.telephone" type="tel" autocomplete="tel" placeholder="Telephone number" /></label>
+        <label>Mobile Number<input name="mobile" [formControl]="address.controls.mobile" type="tel" autocomplete="tel-national" placeholder="Mobile number" /></label>
+        <label>Email<input name="email" [formControl]="address.controls.email" type="email" autocomplete="email" placeholder="Email address" /></label>
+      </div>
+    </section>
+    <section class="form-card" aria-labelledby="shipment-heading">
+      <div class="section-heading"><span class="step">02</span><h2 id="shipment-heading">What do you want picked up?</h2></div>
+      <div class="fields shipment-fields">
+        <label>Packages <span>*</span><input name="packages" required type="number" min="1" placeholder="1" /></label>
+        <label>Total Weight <span>*</span><input name="weight" required type="number" min="0.01" step="0.01" /></label>
+        <label>Pickup Instructions <span>*</span><input name="instructions" required /></label>
+        <label>Number of Shipments <span>*</span><input name="shipments" required type="number" min="1" /></label>
+        <label>Service <span>*</span><select name="service" required (focus)="dropdowns.loadServices()" [attr.aria-busy]="dropdowns.servicesLoading()"><option value="">{{ dropdowns.servicesLoading() ? 'Loading services…' : 'Select Service' }}</option>@for (service of dropdowns.services(); track service.cl_CodeID) { <option [value]="service.cl_CodeID">{{ service.cl_CodeName }}</option> }</select>@if (dropdowns.servicesError()) { <small role="alert">{{ dropdowns.servicesError() }}</small> }</label>
+        <label>Product <span>*</span><input name="product" required type="text" placeholder="Commodity nature / Packaging type" /></label>
+        <label>Vehicle <span>*</span><select name="vehicle" required><option value="">Select</option><option value="VAN">VAN</option><option value="BIKE">BIKE</option><option value="TRUCK">TRUCK</option></select></label>
+        <fieldset class="dimensions"><legend>Dimensions (CM) <span>*</span></legend><div class="dimension-inputs"><label><span class="sr-only">Length</span><input name="length" required type="number" min="0.01" step="any" placeholder="L" /></label><span>×</span><label><span class="sr-only">Width</span><input name="width" required type="number" min="0.01" step="any" placeholder="W" /></label><span>×</span><label><span class="sr-only">Height</span><input name="height" required type="number" min="0.01" step="any" placeholder="H" /></label></div></fieldset>
+      </div>
+    </section>
+    <section #scheduleSection class="form-card schedule-section" aria-labelledby="time-heading">
+      <div class="section-heading"><span class="step">03</span><h2 id="time-heading">When should we pick up your shipment?</h2></div>
+      <div class="time-note"><p>Your courier will collect your shipment within two hours of your selected start time.</p></div>
+      <div class="fields shipment-fields">
+        <label>Pickup Date <span>*</span><input name="date" required type="date" (pointerdown)="activateSchedule()" (keydown)="activateSchedule()" [min]="clock().date" [value]="pickupDate()" (change)="setPickupDate($any($event.target).value); $any($event.target).value = pickupDate()" aria-describedby="pickup-date-notice pickup-schedule-error" /></label>
+        <label>Earliest Possible Time <span>*</span>@if (workdayEnded()) { <small class="ended-badge">Workday ended</small> }<input name="from" required type="time" step="60" [disabled]="workdayEnded()" [min]="minimumStart()" [attr.max]="maximumStart() || null" [value]="earliestTime()" (input)="setEarliestTime($any($event.target).value)" aria-describedby="pickup-hours pickup-schedule-error" /></label>
+        <label>Latest Possible Time <span>*</span><input name="until" required type="time" step="60" [value]="latestTime()" [attr.min]="minimumEnd() || null" [attr.max]="maximumEnd() || null" [disabled]="workdayEnded()" (input)="setLatestTime($any($event.target).value)" aria-describedby="pickup-hours pickup-schedule-error" /></label>
+      </div>
+      <p class="hours-note" id="pickup-hours">{{ hoursDescription() }}</p>
+      <p class="schedule-notice" id="pickup-date-notice" role="status" [hidden]="!dateNotice()">{{ dateNotice() }}</p>
+      <p class="schedule-error" id="pickup-schedule-error" role="alert" [hidden]="!scheduleError()">{{ scheduleError() }}</p>
+      @if (workdayEnded()) {
+        <button class="next-working-day" type="button" (click)="requestNextWorkingDay()">Move to next working day <span aria-hidden="true">→</span></button>
+      }
+    </section>
+    @if (!canSubmit()) { <p class="schedule-notice" id="pickup-validation" role="status">{{ addressLoading() ? 'Please wait while your collection address loads.' : !requiredFieldsValid() ? 'Complete all required fields. Packages and shipments must be whole numbers of at least 1; weight and dimensions must be greater than zero.' : scheduleError() }}</p> }
+    @if (submissionError()) { <p class="schedule-error" role="alert">{{ submissionError() }}</p> }
+    <div class="form-actions"><p><span>*</span> Required fields</p><div><button class="clear-button" type="reset">Clear</button><button class="submit-button" type="submit" [disabled]="!canSubmit()" [attr.aria-describedby]="!canSubmit() ? 'pickup-validation' : null">Schedule Pickup <span aria-hidden="true">→</span></button></div></div>
+  </form>
+</div>
+
+
+<dialog #afterHoursDialog class="cutoff-dialog" aria-labelledby="cutoff-title" aria-describedby="cutoff-description" (cancel)="declineNextDay()">
+  <span class="step" aria-hidden="true">◷</span>
+  <h2 id="cutoff-title">Book for the next working day?</h2>
+  <p id="cutoff-description">{{ cutoffDescription() }}</p>
+  <div class="cutoff-actions"><button type="button" class="clear-button" (click)="declineNextDay()">Keep current date</button><button type="button" class="submit-button" (click)="acceptNextDay()">Yes, change date</button></div>
+</dialog>
+<dialog #returnTodayDialog class="cutoff-dialog" aria-labelledby="return-today-title" aria-describedby="return-today-description" (cancel)="closeReturnToday()">
+  <span class="step" aria-hidden="true">✓</span>
+  <h2 id="return-today-title">Your pickup is back to today</h2>
+  <p id="return-today-description">{{ returnTodayMessage() }}</p>
+  <div class="cutoff-actions"><button type="button" class="submit-button" (click)="closeReturnToday()">Got it</button></div>
+</dialog>
+<dialog #weekendDialog class="cutoff-dialog" aria-labelledby="weekend-title" aria-describedby="weekend-description" (cancel)="closeWeekendNotice()">
+  <span class="step" aria-hidden="true">◷</span>
+  <h2 id="weekend-title">Your pickup moves to the next working day</h2>
+  <p id="weekend-description">{{ weekendMessage() }}</p>
+  <div class="cutoff-actions"><button type="button" class="submit-button" (click)="closeWeekendNotice()">Got it</button></div>
+</dialog>
+<dialog #latestLimitDialog class="cutoff-dialog" aria-labelledby="latest-limit-title" aria-describedby="latest-limit-description" (cancel)="closeLatestLimit()">
+  <span class="step" aria-hidden="true">◷</span>
+  <h2 id="latest-limit-title">This time is outside collection hours</h2>
+  <p id="latest-limit-description">{{ latestLimitMessage() }}</p>
+  <div class="cutoff-actions"><button type="button" class="submit-button" (click)="closeLatestLimit()">Choose another time</button></div>
+</dialog>

@@ -19,6 +19,7 @@
   @if (rateForm.Ship_Wght && rateForm.Ship_Wght > 0) {
     <p class="weight-summary">Actual weight: <b>{{ rateForm.Ship_Wght | number:'1.0-3' }} kg</b> · Volumetric weight: <b>{{ dimensionalWeight | number:'1.0-3' }} kg</b> · Chargeable weight: <b>{{ billableWeight | number:'1.0-3' }} kg</b></p>
   }
+  @if (error()) {<p class="field-error" role="alert">{{ error() }}</p>}
   <div class="rate-actions"><button type="submit" class="check-rates" [disabled]="loading()">{{ loading() ? 'Calculating...' : (pageMode ? 'Find Rate' : 'Check rates') }} <span aria-hidden="true">→</span></button>@if (pageMode) {<button type="button" class="clear-rate" [disabled]="loading()" (click)="resetForm()">Clear</button>}<p>Rates use the greater of actual and volumetric weight. Final charges may vary based on destination and additional services.</p></div>
   @if (!pageMode) {
   <div class="rate-summary" [appScrollToRate]="result()" aria-live="polite"><div><span class="summary-label">ESTIMATED SHIPPING RATE</span><strong>{{ result() ? (result()!.Total | number:'1.2-2') : '—' }} <span>EGP</span></strong></div><span class="summary-note">{{ result() ? 'Estimated total including surcharges and tax.' : 'Enter shipment details to get an estimate.' }}</span></div>

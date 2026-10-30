@@ -48,7 +48,11 @@ export class MangePickup {
   private readonly searchAttempt = signal(0);
   private shownNotice = "";
   constructor() {
-    this.destroyRef.onDestroy(() => clearTimeout(this.copyToastTimer));
+    this.destroyRef.onDestroy(() => {
+      clearTimeout(this.copyToastTimer);
+      this.bookings.clearStatus();
+    });
+    this.bookings.clearStatus();
     this.dropdowns.loadCities();
     this.dropdowns.loadServices();
     const number = this.route.snapshot.queryParamMap.get("bookingNo");

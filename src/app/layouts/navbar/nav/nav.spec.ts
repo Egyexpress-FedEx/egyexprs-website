@@ -1,3 +1,4 @@
+import { AuthState } from '../../../shared/stats/auth-state';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Nav } from './nav';
 import { provideRouter, Router } from '@angular/router';
@@ -12,6 +13,7 @@ describe('Nav', () => {
       imports: [Nav], providers: [provideRouter([])],
     }).compileComponents();
 
+    TestBed.inject(AuthState).clearCredentials();
     fixture = TestBed.createComponent(Nav);
     component = fixture.componentInstance;
     await fixture.whenStable();
@@ -30,7 +32,7 @@ describe('Nav', () => {
     component.searchOpen.set(true);
     component.searchQuery.set('Get rate');
     component.submitSearch(new Event('submit', { cancelable: true }));
-    expect(navigate).toHaveBeenCalledWith(['/home'], { queryParams: { destination: 'get-rate' } });
+    expect(navigate).toHaveBeenCalledWith(['/home/rate/domestic'], { queryParams: null });
     expect(component.searchOpen()).toBe(false);
   });
 

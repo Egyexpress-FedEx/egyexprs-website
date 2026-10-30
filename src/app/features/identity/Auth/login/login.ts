@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
+import { concatMap, finalize, from, map, of } from 'rxjs';
 import { Login as LoginService } from '../../services/login';
 import { AuthState } from '../../../../shared/stats/auth-state';
 
@@ -41,11 +41,14 @@ export class Login {
       return;
     }
 
+    const values = this.form.getRawValue();
     this.loading.set(true);
     this.loginService.login({
-      UserID: this.form.controls.userId.value.trim(),
-      UserPwd: this.form.controls.password.value,
+      UserID: values.userId.trim(),
+      UserPwd: values.password,
     }).pipe(
+      concatMap(response => response.Code === '-1' || !response.UserCredentials ? of(response) :
+        from(this.authState.setCredentials(response.UserCredentials, values.remember, values.password)).pipe(map(() => response))),
       finalize(() => this.loading.set(false)),
     ).subscribe({
       next: response => {
@@ -54,7 +57,6 @@ export class Login {
           return;
         }
 
-        this.authState.setCredentials(response.UserCredentials, this.form.controls.remember.value, this.form.controls.password.value);
         this.form.controls.password.reset();
         void this.router.navigateByUrl('/home');
       },

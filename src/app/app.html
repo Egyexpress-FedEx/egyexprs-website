@@ -9,3 +9,7 @@
 <app-global-loader />
 
 <app-connection-dialog />
+
+@if (auth.persistenceNotice()) {
+  <app-toast heading="Session could not be saved" [message]="auth.persistenceNotice()" (dismissed)="auth.persistenceNotice.set('')" />
+}

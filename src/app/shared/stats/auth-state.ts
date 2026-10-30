@@ -1,45 +1,59 @@
-import { Service, computed, signal } from '@angular/core';
+import { Injectable, computed, signal } from '@angular/core';
 import { UserCredentials } from '../../features/identity/interface/login';
+import { CredentialVault } from './credential-vault';
 
 export type AccountSession = Omit<UserCredentials, 'UserPWD'>;
 const SESSION_KEY = 'egxpress.account-session';
 const API_SESSION_KEY = 'egxpress.api-session';
 const SESSION_FIELDS = ['CoCode', 'DivCode', 'ShipmentType', 'UserID', 'UserName', 'UserTag', 'UserType'] as const;
 
-@Service()
+@Injectable({ providedIn: 'root' })
 export class AuthState {
-  private readonly apiPasswordState = signal(this.restoreApiPassword());
+  private readonly apiPasswordState = signal('');
   readonly apiPassword = this.apiPasswordState.asReadonly();
-  private readonly credentialsState = signal<AccountSession | null>(this.restoreSession());
-
+  private readonly credentialsState = signal<AccountSession | null>(null);
   readonly credentials = this.credentialsState.asReadonly();
-  readonly isLoggedIn = computed(() => this.credentials() !== null);
+  readonly isLoggedIn = computed(() => this.credentials() !== null && !!this.apiPassword());
   readonly shipmentType = computed(() => this.credentials()?.ShipmentType?.trim().toUpperCase() ?? '');
   readonly isDomesticAccount = computed(() => this.shipmentType() === 'D');
   readonly isInternationalAccount = computed(() => this.shipmentType() === 'I');
   readonly userName = computed(() => this.credentials()?.UserName ?? '');
+  readonly persistenceNotice = signal('');
+  readonly ready: Promise<void>;
+  private revision = 0;
 
-  setCredentials(credentials: UserCredentials, remember = false, loginPassword = ''): void {
-    this.apiPasswordState.set(credentials.UserPWD || loginPassword);
+  constructor(private readonly vault: CredentialVault = new CredentialVault()) {
+    this.ready = this.restoreSession();
+  }
+
+  async setCredentials(credentials: UserCredentials, remember = false, loginPassword = ''): Promise<void> {
+    const revision = ++this.revision;
+    const password = credentials.UserPWD || loginPassword;
     const session = this.readSession(credentials);
     this.removeStoredSession();
-    this.credentialsState.set(session);
-    if (session) {
-      try {
-        const storage = remember ? globalThis.localStorage : globalThis.sessionStorage;
-        storage.setItem(SESSION_KEY, JSON.stringify(session));
-        // The API requires a password per request; retain it only in this tab.
-        globalThis.sessionStorage.setItem(API_SESSION_KEY, JSON.stringify({
-          UserID: session.UserID, CoCode: session.CoCode, UserPwd: this.apiPassword(),
-        }));
-      } catch { /* Login still works when browser storage is unavailable. */ }
+    this.persistenceNotice.set('');
+    this.apiPasswordState.set(session && password ? password : '');
+    this.credentialsState.set(session && password ? session : null);
+    if (!session || !password) return;
+    try {
+      const encrypted = await this.vault.encrypt(password, session);
+      if (revision !== this.revision) return;
+      const storage = remember ? globalThis.localStorage : globalThis.sessionStorage;
+      storage.setItem(API_SESSION_KEY, JSON.stringify(encrypted));
+      storage.setItem(SESSION_KEY, JSON.stringify(session));
+    } catch {
+      if (revision !== this.revision) return;
+      this.removeStoredSession();
+      this.persistenceNotice.set('You are signed in for this tab only. Your browser could not securely save your session.');
     }
   }
 
   clearCredentials(): void {
+    this.revision++;
     this.apiPasswordState.set('');
-    this.removeStoredSession();
     this.credentialsState.set(null);
+    this.persistenceNotice.set('');
+    this.removeStoredSession();
   }
 
   private readSession(value: unknown): AccountSession | null {
@@ -52,37 +66,32 @@ export class AuthState {
     return session;
   }
 
-  private restoreSession(): AccountSession | null {
-    for (const storageName of ['sessionStorage', 'localStorage'] as const) {
+  private async restoreSession(): Promise<void> {
+    const revision = this.revision;
+    for (const name of ['sessionStorage', 'localStorage'] as const) {
       try {
-        const storage = globalThis[storageName];
-        const stored = storage.getItem(SESSION_KEY);
-        if (!stored) continue;
-        const session = this.readSession(JSON.parse(stored));
-        if (session) return session;
-        storage.removeItem(SESSION_KEY);
+        const storage = globalThis[name];
+        const session = this.readSession(JSON.parse(storage.getItem(SESSION_KEY) || 'null'));
+        const encrypted: unknown = JSON.parse(storage.getItem(API_SESSION_KEY) || 'null');
+        if (!session || !encrypted) { storage.removeItem(SESSION_KEY); storage.removeItem(API_SESSION_KEY); continue; }
+        // Old plaintext sessions are discarded; they are never copied to the new vault.
+        if (typeof encrypted !== 'object' || 'UserPwd' in encrypted) throw new Error('Legacy session.');
+        const password = await this.vault.decrypt(encrypted, session);
+        if (revision !== this.revision) return;
+        if (!password) throw new Error('Empty session.');
+        this.apiPasswordState.set(password);
+        this.credentialsState.set(session);
+        return;
       } catch {
-        try { globalThis[storageName].removeItem(SESSION_KEY); globalThis[storageName].removeItem(API_SESSION_KEY); } catch { /* Storage may be blocked. */ }
+        if (revision !== this.revision) return;
+        try { globalThis[name].removeItem(SESSION_KEY); globalThis[name].removeItem(API_SESSION_KEY); } catch { /* Browser storage may be unavailable. */ }
       }
     }
-    return null;
-  }
-
-  private restoreApiPassword(): string {
-    try {
-      const session = this.restoreSession();
-      const stored = JSON.parse(globalThis.sessionStorage.getItem(API_SESSION_KEY) || 'null');
-      if (session && stored?.UserID === session.UserID && stored?.CoCode === session.CoCode && typeof stored?.UserPwd === 'string') {
-        return stored.UserPwd;
-      }
-      globalThis.sessionStorage.removeItem(API_SESSION_KEY);
-    } catch { /* Storage may be blocked or contain an invalid session. */ }
-    return '';
   }
 
   private removeStoredSession(): void {
-    for (const storageName of ['sessionStorage', 'localStorage'] as const) {
-      try { globalThis[storageName].removeItem(SESSION_KEY); globalThis[storageName].removeItem(API_SESSION_KEY); } catch { /* Storage may be blocked. */ }
+    for (const name of ['sessionStorage', 'localStorage'] as const) {
+      try { globalThis[name].removeItem(SESSION_KEY); globalThis[name].removeItem(API_SESSION_KEY); } catch { /* Keep in-memory sign-in available. */ }
     }
   }
 }

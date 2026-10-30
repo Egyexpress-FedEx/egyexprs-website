@@ -135,4 +135,26 @@ describe('International package rows', () => {
     expect(form.error()).toBe('Rate unavailable');
     expect(form.loading()).toBe(false);
   });
+  it('cancels pricing when a shipment field changes and emits only the current quote', () => {
+    signIn(); const form = fixture.componentInstance; const emitted: number[] = [];
+    form.rateCalculated.subscribe(rate => emitted.push(rate.totalUsd));
+    form.shipment.patchValue({ product: 'SERV1', country: 'US' });
+    form.getRate(); const http = TestBed.inject(HttpTestingController);
+    const old = http.expectOne(baseLink.baseUrl + 'RateQueryIntDetailed');
+    form.shipment.controls.country.setValue('GB');
+    expect(old.cancelled).toBe(true); expect(form.loading()).toBe(false);
+    form.getRate(); const current = http.expectOne(baseLink.baseUrl + 'RateQueryIntDetailed');
+    expect(current.request.body.Orgn_Code).toBe('GB');
+    current.flush({ code: '1', JasonString: '[{"slno":100,"ChargesDescription":"Total Charges","Amount":20,"AmountBC":1000}]' });
+    expect(emitted).toEqual([20]);
+  });
+  it('cancels pricing when package inputs or an invalid box count change', () => {
+    signIn(); const form = fixture.componentInstance; const http = TestBed.inject(HttpTestingController);
+    form.shipment.patchValue({ product: 'SERV1', country: 'US' }); form.getRate();
+    const old = http.expectOne(baseLink.baseUrl + 'RateQueryIntDetailed');
+    form.packages.at(0).controls.actualWeight.setValue(20); expect(old.cancelled).toBe(true);
+    form.getRate(); const current = http.expectOne(baseLink.baseUrl + 'RateQueryIntDetailed');
+    setBoxes('2.5'); expect(current.cancelled).toBe(true); expect(form.result()).toBeNull();
+  });
+
 });

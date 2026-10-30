@@ -1,6 +1,6 @@
 <div class="pickup-page">
   <header class="page-heading"><h1>Schedule a Pickups</h1></header>
-  <form #pickupForm (input)="validatePickup(pickupForm)" (change)="validatePickup(pickupForm)" (reset)="requiredFieldsValid.set(false); submissionError.set('')" (submit)="$event.preventDefault(); submitPickup(pickupForm)" novalidate>
+  <form #pickupForm (input)="validatePickup(pickupForm)" (change)="validatePickup(pickupForm)" (reset)="$event.preventDefault(); resetPickup(pickupForm)" (submit)="$event.preventDefault(); submitPickup(pickupForm)" novalidate>
     <section class="form-card" aria-labelledby="address-heading">
       <div class="section-heading"><span class="step">01</span><h2 id="address-heading">Where should we pick up your shipment?</h2></div>
       @if (addressLoading()) { <p class="hours-note" role="status">Loading your collection address…</p> }

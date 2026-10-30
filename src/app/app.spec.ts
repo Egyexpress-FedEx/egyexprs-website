@@ -1,3 +1,7 @@
+import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { AuthState } from './shared/stats/auth-state';
 import { TestBed } from '@angular/core/testing';
 import { App } from './app';
 
@@ -5,7 +9,9 @@ describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
     }).compileComponents();
+    TestBed.inject(AuthState).clearCredentials();
   });
 
   it('should create the app', () => {

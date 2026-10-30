@@ -256,4 +256,22 @@ describe('SchedulePinkup', () => {
     TestBed.inject(AuthState).clearCredentials();
   });
 
+  it('clears both form controls and native fields while keeping dates synchronized', async () => {
+    component.address.setValue({ company: 'Old company', contact: 'Old contact', address: 'Old street', area: 'Old area', city: 'BNS', telephone: '123', mobile: '456', email: 'old@example.com' });
+    component.setPickupDate('2099-11-02'); component.setEarliestTime('13:00'); component.setLatestTime('15:00');
+    await fixture.whenStable();
+    const form = fixture.nativeElement.querySelector('form') as HTMLFormElement;
+    (form.elements.namedItem('weight') as HTMLInputElement).value = '20';
+    fixture.nativeElement.querySelector('button[type="reset"]').click(); await fixture.whenStable();
+    expect(Object.values(component.address.getRawValue()).every(value => value === '')).toBe(true);
+    expect((form.elements.namedItem('weight') as HTMLInputElement).value).toBe('');
+    expect((form.elements.namedItem('contact') as HTMLInputElement).value).toBe('');
+    expect((form.elements.namedItem('date') as HTMLInputElement).value).toBe(component.pickupDate());
+    expect((form.elements.namedItem('from') as HTMLInputElement).value).toBe(component.earliestTime());
+    expect((form.elements.namedItem('until') as HTMLInputElement).value).toBe(component.latestTime());
+    expect(component.pickupDate()).not.toBe('2099-11-02'); expect(component.requiredFieldsValid()).toBe(false);
+    const request = component.buildBookingRequest(form);
+    expect(request.BookingData.cl_BookingContactPerson).toBe(''); expect(request.BookingData.cl_BookingMobile).toBe('');
+  });
+
 });

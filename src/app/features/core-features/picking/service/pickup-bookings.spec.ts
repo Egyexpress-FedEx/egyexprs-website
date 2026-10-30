@@ -65,4 +65,15 @@ describe('PickupBookings account cache', () => {
   it('reloads after a new booking invalidates the cache', async () => {
     await load(); store.invalidate(); expect(store.loaded()).toBe(false); await load();
   });
+  it('restores cached bookings without another request after a status search fails', async () => {
+    await load();
+    const pending = store.searchStatus({ from: '', to: '', address: '', number: '', status: 'Pending' }, '');
+    await Promise.resolve();
+    http.expectOne(r => r.url.endsWith('BookingQuery')).flush({ code: '0', Description: 'Status search failed', JasonString: '[]' });
+    await pending; expect(store.error()).toBe('Status search failed');
+    await store.loadAll();
+    expect(store.error()).toBe(''); expect(store.bookings()).toEqual([booking]);
+    http.expectNone(r => r.url.endsWith('BookingQuery'));
+  });
+
 });

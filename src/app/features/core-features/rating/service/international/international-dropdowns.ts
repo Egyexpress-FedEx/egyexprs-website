@@ -1,6 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
-import { finalize } from 'rxjs';
+import { DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize, Subscription } from 'rxjs';
 import { baseLink } from '../../../../../base/baseUrl';
 import { ApiConfigurationService } from '../rate-configuration';
 import {
@@ -22,6 +23,9 @@ export class InternationalDropdowns {
   private readonly configurationService = inject(ApiConfigurationService);
   private lastCountryRequestKey = '';
   private lastProductClassificationRequestKey = '';
+  private activeProductRequestKey = '';
+  private productRequest?: Subscription;
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly countries = signal<CountryItem[]>([]);
   readonly countriesLoading = signal(false);
@@ -78,6 +82,10 @@ export class InternationalDropdowns {
   }
 
   clearProductClassifications(): void {
+    this.productRequest?.unsubscribe();
+    this.productRequest = undefined;
+    this.activeProductRequestKey = '';
+    this.productClassificationsLoading.set(false);
     this.productClassifications.set([]);
     this.productClassificationsError.set(null);
     this.lastProductClassificationRequestKey = '';
@@ -93,13 +101,13 @@ export class InternationalDropdowns {
     ].join(':');
 
     if (
-      this.productClassificationsLoading() ||
-      (this.productClassifications().length > 0 &&
-        requestKey === this.lastProductClassificationRequestKey)
+      (this.productClassificationsLoading() && requestKey === this.activeProductRequestKey) ||
+      requestKey === this.lastProductClassificationRequestKey
     ) {
       return;
     }
 
+    this.clearProductClassifications();
     if (!configuration.UserID.trim() || !configuration.UserPwd) {
       this.productClassificationsError.set('Enter User ID and User Password first.');
       return;
@@ -114,12 +122,15 @@ export class InternationalDropdowns {
     };
 
     this.productClassificationsLoading.set(true);
+    this.activeProductRequestKey = requestKey;
     this.productClassificationsError.set(null);
     this.productClassifications.set([]);
 
-    this.http
+    this.productRequest = this.http
       .post<ProductClassificationResponse>(`${baseLink.baseUrl.replace(/\/$/, '')}/MasterListFilter`, request)
-      .pipe(finalize(() => this.productClassificationsLoading.set(false)))
+      .pipe(takeUntilDestroyed(this.destroyRef), finalize(() => {
+        if (this.activeProductRequestKey === requestKey) this.productClassificationsLoading.set(false);
+      }))
       .subscribe({
         next: (response) => {
           if (response.Code !== '101') {

@@ -57,7 +57,10 @@ export class PickupBookings {
     const account = this.ensureOwner();
     if (!account) { this.failure.set('Please sign in to view your pickups.'); return Promise.resolve(); }
     if (this.allRequest) return this.allRequest;
-    if (this.loaded() && !force) return Promise.resolve();
+    if (this.loaded() && !force) {
+      this.failure.set('');
+      return Promise.resolve();
+    }
     const generation = this.generation;
     this.allBusy.set(true); this.failure.set('');
     this.allRequest = (async () => {

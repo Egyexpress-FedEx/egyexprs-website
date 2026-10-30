@@ -25,6 +25,7 @@ export class SchedulePinkup {
   private readonly auth = inject(AuthState);
   private readonly router = inject(Router);
   private readonly customerCode = signal('');
+  private addressWasCleared = false;
   readonly submitting = signal(false);
   readonly bookingNumber = signal('');
   readonly copyStatus = signal('');
@@ -42,6 +43,27 @@ export class SchedulePinkup {
   validatePickup(form: HTMLFormElement): void {
     this.requiredFieldsValid.set(form.checkValidity());
     this.submissionError.set('');
+  }
+
+  resetPickup(form: HTMLFormElement): void {
+    if (this.submitting()) return;
+    this.addressWasCleared = true;
+    this.address.reset();
+    this.scheduleActivated.set(false);
+    this.returnTodayMessage.set('');
+    this.dismissedCutoff.set('');
+    this.dismissedLatestLimit.set('');
+    this.clock.set(cairoClock());
+    this.setPickupDate(this.clock().date);
+    this.submissionError.set('');
+    this.requiredFieldsValid.set(false);
+    // The remaining fields use native controls rather than Angular FormControls.
+    for (const field of Array.from(form.elements)) {
+      if (field instanceof HTMLInputElement || field instanceof HTMLSelectElement) field.value = '';
+    }
+    (form.elements.namedItem('date') as HTMLInputElement).value = this.pickupDate();
+    (form.elements.namedItem('from') as HTMLInputElement).value = this.earliestTime();
+    (form.elements.namedItem('until') as HTMLInputElement).value = this.latestTime();
   }
 
   submitPickup(form: HTMLFormElement): void {
@@ -422,7 +444,7 @@ export class SchedulePinkup {
           mobile: customer.cl_CustMobile, email: customer.cl_CustEMail,
         };
         for (const key of Object.keys(defaults) as (keyof typeof defaults)[]) {
-          if (!this.address.controls[key].dirty) this.address.controls[key].setValue(defaults[key] ?? '');
+          if (!this.addressWasCleared && !this.address.controls[key].dirty) this.address.controls[key].setValue(defaults[key] ?? '');
         }
       },
       error: () => {

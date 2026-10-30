@@ -1,7 +1,7 @@
-import { Component, Input, computed, inject, output, signal } from '@angular/core';
+import { Component, DestroyRef, Input, computed, inject, output, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { finalize } from 'rxjs';
+import { finalize, Subscription } from 'rxjs';
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { chargeableWeight, volumetricWeight, nonNegative } from '../../service/weight-calculation';
 import { InternationalDropdowns } from '../../service/international/international-dropdowns';
@@ -34,6 +34,8 @@ export class InternationalForm {
   readonly dropdowns = inject(InternationalDropdowns);
   private readonly query = inject(InternationalRateQueryService);
   private readonly configuration = inject(ApiConfigurationService);
+  private readonly destroyRef = inject(DestroyRef);
+  private rateRequest?: Subscription;
   readonly loading = signal(false);
   readonly error = signal('');
   readonly result = signal<InternationalRateResult | null>(null);
@@ -55,8 +57,19 @@ export class InternationalForm {
       this.dropdowns.clearProductClassifications();
       this.dropdowns.loadProductClassifications(direction);
     });
-    this.shipment.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => this.result.set(null));
-    this.packages.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => this.result.set(null));
+    this.shipment.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => this.clearResult());
+    this.packages.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => this.clearResult());
+  }
+
+  private requestSnapshot(): string {
+    return JSON.stringify({ shipment: this.shipment.getRawValue(), packages: this.packages.getRawValue() });
+  }
+
+  private clearResult(): void {
+    this.rateRequest?.unsubscribe();
+    this.rateRequest = undefined;
+    this.result.set(null);
+    this.error.set('');
   }
 
   getRate(): void {
@@ -79,7 +92,8 @@ export class InternationalForm {
       return;
     }
     this.loading.set(true);
-    this.query.getRate({
+    const snapshot = this.requestSnapshot();
+    this.rateRequest = this.query.getRate({
       ...config,
       Orgn_Code: data.direction === 'EXPORT' ? 'EG' : data.country,
       Dest_Code: data.direction === 'EXPORT' ? data.country : 'EG',
@@ -89,9 +103,16 @@ export class InternationalForm {
         cl_AWBNo: '', cl_PkgId: '', cl_PCs: '',
         cl_DimL: String(nonNegative(row.length)), cl_DimW: String(nonNegative(row.width)), cl_DimH: String(nonNegative(row.height)),
       })),
-    }).pipe(finalize(() => this.loading.set(false))).subscribe({
-      next: result => { this.result.set(result); this.rateCalculated.emit(result); },
-      error: error => this.error.set(error.message || 'Unable to calculate the international rate.'),
+    }).pipe(takeUntilDestroyed(this.destroyRef), finalize(() => this.loading.set(false))).subscribe({
+      next: result => {
+        if (this.boxCountError() || snapshot !== this.requestSnapshot()) return;
+        this.result.set(result);
+        this.rateCalculated.emit(result);
+      },
+      error: error => {
+        if (this.boxCountError() || snapshot !== this.requestSnapshot()) return;
+        this.error.set(error.message || 'Unable to calculate the international rate.');
+      },
     });
   }
 
@@ -100,6 +121,7 @@ export class InternationalForm {
   }
 
   resetForm(): void {
+    this.clearResult();
     this.shipment.reset({ direction: this.shipment.controls.direction.value, product: '', country: '', city: '', zipCode: '' }, { emitEvent: false });
     while (this.packages.length > 1) this.packages.removeAt(this.packages.length - 1, { emitEvent: false });
     this.packages.at(0).reset({ length: null, width: null, height: null, actualWeight: 0 });
@@ -109,6 +131,7 @@ export class InternationalForm {
   }
 
   setBoxCount(event: Event): void {
+    this.clearResult();
     const input = event.target as HTMLInputElement;
     const count = Number(input.value);
     if (count > this.maxBoxes) {

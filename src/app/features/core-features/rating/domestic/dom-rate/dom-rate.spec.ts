@@ -39,7 +39,7 @@ describe('DomRate', () => {
 
   it('uses CoCode as AccountNo and the entered weight in the reference RateQuery payload', () => {
     signIn();
-    Object.assign(component.rateForm, { Prod_Type: 'P', Serv_Type: 'S', Orgn_Code: 'CAI', Dest_Code: 'ALX', Ship_Wght: 3.5, width: 100, numberOfPieces: 2 });
+    Object.assign(component.rateForm, { Prod_Type: 'P', Serv_Type: 'S', Orgn_Code: 'CAI', Dest_Code: 'ALX', Ship_Wght: 3.5, width: 100, height: 10, length: 10, numberOfPieces: 2 });
     component.getRate();
     const request = TestBed.inject(HttpTestingController).expectOne(`${baseLink.baseUrl}RateQuery`);
     expect(request.request.body).toEqual({
@@ -143,4 +143,44 @@ describe('DomRate', () => {
       request.flush({ code: '1', JasonString: '[{"Total":100}]' });
     });
   }
+  it('cancels an old quote when inputs change and only emits the new result', () => {
+    signIn();
+    const emitted: number[] = []; component.rateCalculated.subscribe(rate => emitted.push(rate.Total));
+    Object.assign(component.rateForm, { Prod_Type: 'P', Serv_Type: 'S', Orgn_Code: 'CAI', Dest_Code: 'ALX', Ship_Wght: 1 });
+    const http = TestBed.inject(HttpTestingController); component.getRate();
+    const old = http.expectOne(baseLink.baseUrl + 'RateQuery');
+    component.rateForm.Ship_Wght = 20; component.clearResult();
+    expect(old.cancelled).toBe(true); expect(component.loading()).toBe(false);
+    component.getRate(); const current = http.expectOne(baseLink.baseUrl + 'RateQuery');
+    expect(current.request.body.Ship_Wght).toBe(20);
+    current.flush({ code: '1', JasonString: '[{"Total":200}]' });
+    expect(emitted).toEqual([200]); expect(component.result()?.Total).toBe(200);
+  });
+  it('discards a response when the form was changed without a change event', () => {
+    signIn(); Object.assign(component.rateForm, { Prod_Type: 'P', Serv_Type: 'S', Orgn_Code: 'CAI', Dest_Code: 'ALX', Ship_Wght: 1 });
+    component.getRate(); const request = TestBed.inject(HttpTestingController).expectOne(baseLink.baseUrl + 'RateQuery');
+    component.rateForm.Ship_Wght = 20;
+    request.flush({ code: '1', JasonString: '[{"Total":100}]' }); expect(component.result()).toBeNull();
+  });
+
+  for (const pieces of [0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY]) {
+    it('blocks invalid piece count ' + pieces + ' before requesting a quote', () => {
+      Object.assign(component.rateForm, { Prod_Type: 'P', Serv_Type: 'S', Orgn_Code: 'CAI', Dest_Code: 'ALX', Ship_Wght: 1, numberOfPieces: pieces });
+      component.getRate();
+      expect(component.error()).toContain('whole number');
+      TestBed.inject(HttpTestingController).expectNone(baseLink.baseUrl + 'RateQuery');
+    });
+  }
+  for (const dimensions of [
+    { length: -10, width: 10, height: 10 }, { length: 0, width: 10, height: 10 },
+    { length: 10, width: null, height: null }, { length: Number.NaN, width: 10, height: 10 },
+    { length: 1e308, width: 1e308, height: 1e308 },
+  ]) {
+    it('blocks invalid or incomplete dimensions ' + JSON.stringify(dimensions), () => {
+      Object.assign(component.rateForm, { Prod_Type: 'P', Serv_Type: 'S', Orgn_Code: 'CAI', Dest_Code: 'ALX', Ship_Wght: 1, ...dimensions });
+      component.getRate(); expect(component.error()).toBeTruthy();
+      TestBed.inject(HttpTestingController).expectNone(baseLink.baseUrl + 'RateQuery');
+    });
+  }
+
 });

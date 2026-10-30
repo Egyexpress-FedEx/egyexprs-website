@@ -35,6 +35,7 @@ export const routes: Routes = [
             { path: '', redirectTo: 'pickups/schedule', pathMatch: 'full' },
             { path: 'pickups', redirectTo: 'pickups/schedule', pathMatch: 'full' },
             { path: 'pickups/schedule', loadComponent: () => import('./features/core-features/picking/schedule-pinkup/schedule-pinkup').then(c => c.SchedulePinkup) },
+            { path: 'pickups/manage', title: 'Manage pickups', loadComponent: () => import('./features/core-features/picking/mange-pickup/mange-pickup').then(c => c.MangePickup) },
             ...[
                 { path: 'create-shipments', title: 'Create shipments' },
                 { path: 'batch-shipments', title: 'Batch shipments' },

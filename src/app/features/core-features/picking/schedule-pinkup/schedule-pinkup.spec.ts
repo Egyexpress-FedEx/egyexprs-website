@@ -212,4 +212,48 @@ describe('SchedulePinkup', () => {
     http.verify();
     TestBed.inject(AuthState).clearCredentials();
   });
+  it('posts booking data, prevents duplicate submissions, and handles API results', async () => {
+    TestBed.inject(AuthState).setCredentials({
+      CoCode: 'D77777', DivCode: '', ShipmentType: 'D', UserID: 'pickup-user',
+      UserName: 'Pickup User', UserPWD: 'password', UserTag: '', UserType: '',
+    });
+    component.address.setValue({ company: 'Company', contact: 'Person', address: 'Street', area: 'Area', city: 'BNS', telephone: '123', mobile: '456', email: '' });
+    component.dropdowns.cities.set([{ cl_AreaCode: '', cl_CodeID: 'BNS', cl_CodeName: 'Beni-Sueif' }]);
+    component.setPickupDate('2099-11-02');
+    component.setEarliestTime('10:00');
+    component.setLatestTime('12:00');
+    await fixture.whenStable();
+    const form = fixture.nativeElement.querySelector('form') as HTMLFormElement;
+    for (const [name, value] of Object.entries({ packages: '1', weight: '2', shipments: '1', instructions: 'Special', product: 'Documents', vehicle: 'BIKE', length: '10', width: '20', height: '30' })) {
+      (form.elements.namedItem(name) as HTMLInputElement).value = value;
+    }
+    const service = form.elements.namedItem('service') as HTMLSelectElement;
+    service.add(new Option('Priority', 'PRY')); service.value = 'PRY';
+    const http = TestBed.inject(HttpTestingController);
+    component.submitPickup(form);
+    component.submitPickup(form);
+    const request = http.expectOne(r => r.url.endsWith('CreateBooking'));
+    expect(request.request.body.UserID).toBe('pickup-user');
+    expect(request.request.body.BookingData).toMatchObject({ cl_BookingRefNo: null, cl_CustCode: 'D77777', cl_Origin: 'BNS', cl_SendersCity: 'Beni-Sueif', cl_ServiceType: 'PRY', cl_ShipmentWeight: '2', cl_PickupReadyTime: '10:00', cl_ProductType: null });
+    request.flush({ Code: '-1', Description: 'Required field missing' });
+    expect(component.submissionError()).toBe('Required field missing');
+    expect(component.submitting()).toBe(false);
+    component.closeBookingError();
+    component.submitPickup(form);
+    http.expectOne(r => r.url.endsWith('CreateBooking')).flush({ Code: '101', Description: 'SUCCESS', BookingNo: 'S60085' });
+    expect(component.bookingNumber()).toBe('S60085');
+    expect(component.canSubmit()).toBe(false);
+    component.createAnotherPickup(form);
+    expect(component.bookingNumber()).toBe('');
+    expect(component.address.controls.company.value).toBe('Company');
+    expect((form.elements.namedItem('weight') as HTMLInputElement).value).toBe('2');
+    expect((form.elements.namedItem('instructions') as HTMLInputElement).value).toBe('Special');
+    expect(component.pickupDate()).toBe('2099-11-02');
+    expect(component.earliestTime()).toBe('10:00');
+    expect(component.latestTime()).toBe('12:00');
+    expect(component.canSubmit()).toBe(true);
+    http.verify();
+    TestBed.inject(AuthState).clearCredentials();
+  });
+
 });

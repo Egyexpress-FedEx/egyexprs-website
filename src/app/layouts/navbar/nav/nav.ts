@@ -39,9 +39,17 @@ export class Nav {
     const exact = this.searchRecommendations.find(item => this.normalizeSearch(item.label) === this.normalizeSearch(this.searchQuery()));
     const match = exact ?? this.filteredRecommendations()[0];
     if (match) {
-      void this.router.navigate([match.route], { queryParams: { destination: match.destination } });
+      void this.router.navigate([this.searchRoute(match)], { queryParams: this.searchParams(match) });
       this.closeSearch();
     }
+  }
+  searchRoute(item: { route: string; destination: string }): string {
+    if (item.destination === 'create-pickup') return '/shipping/pickups/schedule';
+    if (item.destination === 'get-rate') return this.authState.isLoggedIn() ? '/rate' : '/home/rate/domestic';
+    return item.route;
+  }
+  searchParams(item: { destination: string }): { destination: string } | null {
+    return item.destination === 'create-pickup' || item.destination === 'get-rate' ? null : { destination: item.destination };
   }
   readonly scrolled = signal(false);
   readonly language = signal<'AR' | 'EN'>('EN');

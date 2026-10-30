@@ -3,7 +3,12 @@ import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { cairoClock, closingTime, displayTime, minutes, nextWorkingDate, timeFromMinutes } from './pickup-schedule';
 import { Dropdowns } from '../../rating/service/domestic/dropdowns';
+import { PickupBookings } from '../service/pickup-bookings';
 import { Pickup } from '../service/pickup';
+import { Router } from '@angular/router';
+import { finalize } from 'rxjs';
+import { BookingData, PickingRequest } from '../interface/pickup-work';
+import { CONNECTION_ERROR_MESSAGE } from '../../../../shared/stats/connection-state';
 import { AuthState } from '../../../../shared/stats/auth-state';
 
 @Component({
@@ -16,13 +21,23 @@ import { AuthState } from '../../../../shared/stats/auth-state';
 export class SchedulePinkup {
   readonly dropdowns = inject(Dropdowns);
   private readonly accountService = inject(Pickup);
+  private readonly pickupBookings = inject(PickupBookings);
   private readonly auth = inject(AuthState);
+  private readonly router = inject(Router);
+  private readonly customerCode = signal('');
+  readonly submitting = signal(false);
+  readonly bookingNumber = signal('');
+  readonly copyStatus = signal('');
+  private readonly bookingDialog = viewChild<ElementRef<HTMLDialogElement>>('bookingDialog');
+  private readonly errorDialog = viewChild<ElementRef<HTMLDialogElement>>('errorDialog');
+  readonly minimumWeight = computed(() => this.auth.isInternationalAccount() ? 0.5 : 1);
+  readonly validationMessage = computed(() => `Complete all required fields. Packages and shipments must be whole numbers of at least 1; minimum weight is ${this.minimumWeight()} kg for ${this.auth.isInternationalAccount() ? 'international' : 'domestic'} shipping; dimensions must be greater than zero.`);
   private readonly destroyRef = inject(DestroyRef);
   readonly addressLoading = signal(false);
   readonly addressError = signal('');
   readonly submissionError = signal('');
   readonly requiredFieldsValid = signal(false);
-  readonly canSubmit = computed(() => this.requiredFieldsValid() && !this.scheduleError() && !this.addressLoading());
+  readonly canSubmit = computed(() => this.requiredFieldsValid() && !this.scheduleError() && !this.addressLoading() && !this.submitting() && !this.bookingNumber());
 
   validatePickup(form: HTMLFormElement): void {
     this.requiredFieldsValid.set(form.checkValidity());
@@ -30,6 +45,8 @@ export class SchedulePinkup {
   }
 
   submitPickup(form: HTMLFormElement): void {
+    if (this.submitting() || this.bookingNumber() || this.addressLoading()) return;
+    this.refreshEarliestTime();
     this.submissionError.set('');
     this.activateSchedule();
     if (!form.reportValidity()) {
@@ -41,8 +58,166 @@ export class SchedulePinkup {
       this.scrollToSchedule();
       return;
     }
-    this.submissionError.set('Pickup booking is currently unavailable. Your request has not been sent. Please contact customer service to arrange your pickup.');
+    if (!this.auth.credentials() || !this.auth.apiPassword()) {
+      this.showBookingError('Please sign in again before booking your pickup.');
+      return;
+    }
+    this.submitting.set(true);
+    this.accountService.CreateSchedPickup(this.buildBookingRequest(form)).pipe(
+      takeUntilDestroyed(this.destroyRef), finalize(() => this.submitting.set(false)),
+    ).subscribe({
+      next: response => {
+        if (String(response.Code) !== '101' || !response.BookingNo?.trim()) {
+          this.showBookingError(response.Description || 'Unable to create your pickup. Please try again.');
+          return;
+        }
+        this.pickupBookings.invalidate();
+        this.bookingNumber.set(response.BookingNo.trim());
+        this.copyStatus.set('');
+        this.bookingDialog()?.nativeElement.showModal?.();
+      },
+      error: error => {
+        if (error.message === CONNECTION_ERROR_MESSAGE) {
+          this.submissionError.set(CONNECTION_ERROR_MESSAGE);
+          return;
+        }
+        this.showBookingError(error.error?.Description || 'Unable to confirm your booking. Please check Manage pickups before trying again.');
+      },
+    });
   }
+
+  buildBookingRequest(form: HTMLFormElement): PickingRequest {
+    const data = new FormData(form);
+    const value = (name: string) => String(data.get(name) ?? '').trim();
+    const address = this.address.getRawValue();
+    const now = cairoClock();
+    const booking: BookingData = {
+      cl_BookingRefNo: null,
+      cl_BookingPrefix: '',
+      cl_BookingDate: '',
+      cl_BookingTime: '',
+      cl_Origin: '',
+      cl_Destination: '',
+      cl_ProductType: null,
+      cl_ServiceType: '',
+      cl_VehicleType: '',
+      cl_RefNo: null,
+      cl_NoofPieces: '',
+      cl_NoofShipments: '',
+      cl_ShipmentWeight: '',
+      cl_CashOnPickup: null,
+      cl_ShipmentCash: null,
+      cl_ShipmentValue: null,
+      cl_ShipmentValueCurrency: null,
+      cl_PickupReadyDate: '',
+      cl_PickupReadyTime: '',
+      cl_PickupBeforeTime: '',
+      cl_PickupInstruction: '',
+      cl_CustCode: '',
+      cl_CustName: '',
+      cl_BookingContactPerson: '',
+      cl_BookingPhone1: '',
+      cl_BookingPhone2: '',
+      cl_BookingMobile: '',
+      cl_BookingEmail: '',
+      cl_BookingAddress1: '',
+      cl_BookingAddress2: '',
+      cl_BookingCity: '',
+      cl_BookingCountry: '',
+      cl_SendersName: '',
+      cl_SendersContactPerson: '',
+      cl_SendersPhone1: '',
+      cl_SendersPhone2: '',
+      cl_SendersMobile: '',
+      cl_SendersEmail: '',
+      cl_SendersAddress1: '',
+      cl_SendersAddress2: '',
+      cl_SendersPinCode: '',
+      cl_SendersCity: '',
+      cl_SendersCountry: '',
+      cl_SendersMakaniNo: '',
+      cl_ReceiversName: '',
+      cl_ReceiversContactPerson: '',
+      cl_ReceiversPhone1: '',
+      cl_ReceiversPhone2: '',
+      cl_ReceiversMobile: '',
+      cl_ReceiversEmail: '',
+      cl_ReceiversAddress1: '',
+      cl_ReceiversAddress2: '',
+      cl_ReceiversPinCode: '',
+      cl_ReceiversCity: '',
+      cl_ReceiversCountry: '',
+      cl_ReceiversMakaniNo: '',
+      cl_PickupLandMark: '',
+      cl_PickupBranch: null,
+      cl_ThirdPartyPickup: null,
+      cl_ThirdPartyCode: null,
+      cl_InsShipment: null,
+      cl_InsProvider: null,
+      cl_InsAmount: null,
+      cl_Prioirty: null,
+      cl_PickupDone: null,
+      cl_PickupAllocated: null,
+      cl_Route: null,
+      cl_Courier: null,
+      cl_PSNo: null,
+      cl_SMSBooker: null,
+      cl_SMSShipper: null,
+      cl_SMSConsignee: null,
+      cl_SMSCourier: null,
+      cl_EmailBooker: null,
+      cl_EmailShipper: null,
+      cl_EmailConsignee: null,
+      cl_CreatedTime: null,
+      cl_CreatedBy: null,
+      cl_Cancelled: null,
+      cl_CancelledBy: null,
+      cl_CancelType: null,
+      cl_CancelReason: null,
+      cl_PRemarks: '',
+    };
+    Object.assign(booking, {
+      cl_BookingPrefix: 'S', cl_BookingDate: now.date, cl_BookingTime: now.time,
+      cl_Origin: address.city, cl_ServiceType: value('service'), cl_VehicleType: value('vehicle'),
+      cl_NoofPieces: value('packages'), cl_NoofShipments: value('shipments'), cl_ShipmentWeight: value('weight'),
+      cl_PickupReadyDate: this.pickupDate(), cl_PickupReadyTime: this.earliestTime(), cl_PickupBeforeTime: this.latestTime(),
+      cl_PickupInstruction: value('instructions'),
+      cl_CustCode: this.customerCode() || this.auth.credentials()?.AccountNo || this.auth.credentials()?.CoCode || '',
+      cl_CustName: address.company, cl_BookingContactPerson: address.contact,
+      cl_BookingPhone1: address.telephone, cl_BookingMobile: address.mobile, cl_BookingEmail: address.email,
+      cl_BookingAddress1: address.address, cl_BookingAddress2: address.area, cl_BookingCity: address.city, cl_BookingCountry: 'EG',
+      cl_SendersName: address.company, cl_SendersContactPerson: address.contact,
+      cl_SendersPhone1: address.telephone, cl_SendersMobile: address.mobile, cl_SendersEmail: address.email,
+      cl_SendersAddress1: address.address, cl_SendersAddress2: address.area,
+      cl_SendersCity: this.dropdowns.cities().find(city => city.cl_CodeID === address.city)?.cl_CodeName || address.city,
+      cl_SendersCountry: 'EG', cl_ReceiversCountry: 'EG',
+      cl_PRemarks: value('product') + '; Dimensions (cm): ' + value('length') + ' x ' + value('width') + ' x ' + value('height'),
+    });
+    return { UserID: this.auth.credentials()?.UserID || '', UserPwd: this.auth.apiPassword(), BookingData: booking };
+  }
+
+  private showBookingError(message: string): void {
+    this.submissionError.set(message);
+    this.errorDialog()?.nativeElement.showModal?.();
+  }
+  closeBookingError(): void { this.errorDialog()?.nativeElement.close?.(); }
+  async copyBookingNumber(): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(this.bookingNumber());
+      this.copyStatus.set('Booking number copied.');
+    } catch { this.copyStatus.set('Select the booking number and copy it manually.'); }
+  }
+  createAnotherPickup(form: HTMLFormElement): void {
+    this.bookingDialog()?.nativeElement.close?.();
+    this.bookingNumber.set('');
+    this.copyStatus.set('');
+    this.validatePickup(form);
+  }
+  managePickup(): void {
+    this.bookingDialog()?.nativeElement.close?.();
+    void this.router.navigate(['/shipping/pickups/manage'], { queryParams: { bookingNo: this.bookingNumber() } });
+  }
+
   readonly address = new FormGroup({
     company: new FormControl('', { nonNullable: true }),
     contact: new FormControl('', { nonNullable: true }),
@@ -238,6 +413,7 @@ export class SchedulePinkup {
           this.addressError.set(response.Description || 'Unable to load your collection address. You can enter it below.');
           return;
         }
+        this.customerCode.set(customer.cl_CustCode || customer.cl_AccCode || '');
         // Keep any details already edited while the account request was loading.
         const defaults = {
           company: customer.cl_CustName, contact: customer.cl_CPerson,

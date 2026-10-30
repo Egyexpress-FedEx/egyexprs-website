@@ -20,7 +20,7 @@
       <div class="section-heading"><span class="step">02</span><h2 id="shipment-heading">What do you want picked up?</h2></div>
       <div class="fields shipment-fields">
         <label>Packages <span>*</span><input name="packages" required type="number" min="1" placeholder="1" /></label>
-        <label>Total Weight <span>*</span><input name="weight" required type="number" min="0.01" step="0.01" /></label>
+        <label>Total Weight (kg) <span>*</span><input name="weight" required type="number" [min]="minimumWeight()" step="0.01" /></label>
         <label>Pickup Instructions <span>*</span><input name="instructions" required /></label>
         <label>Number of Shipments <span>*</span><input name="shipments" required type="number" min="1" /></label>
         <label>Service <span>*</span><select name="service" required (focus)="dropdowns.loadServices()" [attr.aria-busy]="dropdowns.servicesLoading()"><option value="">{{ dropdowns.servicesLoading() ? 'Loading services…' : 'Select Service' }}</option>@for (service of dropdowns.services(); track service.cl_CodeID) { <option [value]="service.cl_CodeID">{{ service.cl_CodeName }}</option> }</select>@if (dropdowns.servicesError()) { <small role="alert">{{ dropdowns.servicesError() }}</small> }</label>
@@ -44,9 +44,9 @@
         <button class="next-working-day" type="button" (click)="requestNextWorkingDay()">Move to next working day <span aria-hidden="true">→</span></button>
       }
     </section>
-    @if (!canSubmit()) { <p class="schedule-notice" id="pickup-validation" role="status">{{ addressLoading() ? 'Please wait while your collection address loads.' : !requiredFieldsValid() ? 'Complete all required fields. Packages and shipments must be whole numbers of at least 1; weight and dimensions must be greater than zero.' : scheduleError() }}</p> }
+    @if (!canSubmit()) { <p class="schedule-notice" id="pickup-validation" role="status">{{ addressLoading() ? 'Please wait while your collection address loads.' : !requiredFieldsValid() ? validationMessage() : scheduleError() }}</p> }
     @if (submissionError()) { <p class="schedule-error" role="alert">{{ submissionError() }}</p> }
-    <div class="form-actions"><p><span>*</span> Required fields</p><div><button class="clear-button" type="reset">Clear</button><button class="submit-button" type="submit" [disabled]="!canSubmit()" [attr.aria-describedby]="!canSubmit() ? 'pickup-validation' : null">Schedule Pickup <span aria-hidden="true">→</span></button></div></div>
+    <div class="form-actions"><p><span>*</span> Required fields</p><div><button class="clear-button" type="reset" [disabled]="submitting()">Clear</button><button class="submit-button" type="submit" [disabled]="!canSubmit()" [attr.aria-describedby]="!canSubmit() ? 'pickup-validation' : null">{{ submitting() ? 'Booking…' : 'Schedule Pickup' }} <span aria-hidden="true">→</span></button></div></div>
   </form>
 </div>
 
@@ -74,4 +74,25 @@
   <h2 id="latest-limit-title">This time is outside collection hours</h2>
   <p id="latest-limit-description">{{ latestLimitMessage() }}</p>
   <div class="cutoff-actions"><button type="button" class="submit-button" (click)="closeLatestLimit()">Choose another time</button></div>
+</dialog>
+
+<dialog #errorDialog class="cutoff-dialog" aria-labelledby="booking-error-title" aria-describedby="booking-error-description">
+  <span class="step" aria-hidden="true">!</span><h2 id="booking-error-title">Pickup could not be booked</h2>
+  <p id="booking-error-description">{{ submissionError() }}</p>
+  <div class="cutoff-actions"><button type="button" class="submit-button" (click)="closeBookingError()">OK</button></div>
+</dialog>
+<dialog #bookingDialog class="cutoff-dialog booking-success-dialog" aria-labelledby="booking-success-title" aria-describedby="booking-success-description" (cancel)="$event.preventDefault()">
+  <span class="step" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6" /></svg></span><h2 id="booking-success-title">Your pickup is booked!</h2>
+  <p id="booking-success-description">Keep your booking number handy.<br />Use it to follow up on your pickup anytime.</p>
+  <div class="booking-reference">
+    <span class="booking-reference-label">Booking number</span>
+    <div class="booking-reference-value">
+      <strong>{{ bookingNumber() }}</strong>
+      <button type="button" class="copy-booking-button" aria-label="Copy booking number" title="Copy booking number" (click)="copyBookingNumber()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" /></svg>
+      </button>
+    </div>
+  </div>
+  <p class="booking-copy-status" role="status">{{ copyStatus() }}</p>
+  <div class="cutoff-actions"><button type="button" class="clear-button" (click)="createAnotherPickup(pickupForm)">Create another pickup</button><button type="button" class="submit-button" (click)="managePickup()">Manage pickup</button></div>
 </dialog>

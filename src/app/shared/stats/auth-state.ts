@@ -3,11 +3,12 @@ import { UserCredentials } from '../../features/identity/interface/login';
 
 export type AccountSession = Omit<UserCredentials, 'UserPWD'>;
 const SESSION_KEY = 'egxpress.account-session';
+const API_SESSION_KEY = 'egxpress.api-session';
 const SESSION_FIELDS = ['CoCode', 'DivCode', 'ShipmentType', 'UserID', 'UserName', 'UserTag', 'UserType'] as const;
 
 @Service()
 export class AuthState {
-  private readonly apiPasswordState = signal('');
+  private readonly apiPasswordState = signal(this.restoreApiPassword());
   readonly apiPassword = this.apiPasswordState.asReadonly();
   private readonly credentialsState = signal<AccountSession | null>(this.restoreSession());
 
@@ -27,6 +28,10 @@ export class AuthState {
       try {
         const storage = remember ? globalThis.localStorage : globalThis.sessionStorage;
         storage.setItem(SESSION_KEY, JSON.stringify(session));
+        // The API requires a password per request; retain it only in this tab.
+        globalThis.sessionStorage.setItem(API_SESSION_KEY, JSON.stringify({
+          UserID: session.UserID, CoCode: session.CoCode, UserPwd: this.apiPassword(),
+        }));
       } catch { /* Login still works when browser storage is unavailable. */ }
     }
   }
@@ -57,15 +62,27 @@ export class AuthState {
         if (session) return session;
         storage.removeItem(SESSION_KEY);
       } catch {
-        try { globalThis[storageName].removeItem(SESSION_KEY); } catch { /* Storage may be blocked. */ }
+        try { globalThis[storageName].removeItem(SESSION_KEY); globalThis[storageName].removeItem(API_SESSION_KEY); } catch { /* Storage may be blocked. */ }
       }
     }
     return null;
   }
 
+  private restoreApiPassword(): string {
+    try {
+      const session = this.restoreSession();
+      const stored = JSON.parse(globalThis.sessionStorage.getItem(API_SESSION_KEY) || 'null');
+      if (session && stored?.UserID === session.UserID && stored?.CoCode === session.CoCode && typeof stored?.UserPwd === 'string') {
+        return stored.UserPwd;
+      }
+      globalThis.sessionStorage.removeItem(API_SESSION_KEY);
+    } catch { /* Storage may be blocked or contain an invalid session. */ }
+    return '';
+  }
+
   private removeStoredSession(): void {
     for (const storageName of ['sessionStorage', 'localStorage'] as const) {
-      try { globalThis[storageName].removeItem(SESSION_KEY); } catch { /* Storage may be blocked. */ }
+      try { globalThis[storageName].removeItem(SESSION_KEY); globalThis[storageName].removeItem(API_SESSION_KEY); } catch { /* Storage may be blocked. */ }
     }
   }
 }
